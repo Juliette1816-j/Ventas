@@ -1,12 +1,3 @@
-document.getElementById("btnLogin").addEventListener("click", () => {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    console.log("Correo:", email);
-    console.log("Contraseña:", password);
-
-    alert("Botón funcionando correctamente");
-});
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
 const supabaseUrl = "https://jzuxaxlnguvsvlmymkge.supabase.co";
@@ -17,8 +8,6 @@ const supabase = createClient(
     supabaseKey
 );
 
-console.log("Conectado a Supabase");
-
 async function cargarProductos() {
 
     const { data, error } =
@@ -28,7 +17,7 @@ async function cargarProductos() {
             .order("producto");
 
     if (error) {
-        console.error(error);
+        console.error("Error:", error);
         return;
     }
 
@@ -37,15 +26,13 @@ async function cargarProductos() {
 
     combo.innerHTML = "";
 
-    data.forEach(producto => {
+    data.forEach(item => {
 
         const option =
             document.createElement("option");
 
-        option.value = producto.codigo;
-
-        option.textContent =
-            producto.producto;
+        option.value = item.codigo;
+        option.textContent = item.producto;
 
         combo.appendChild(option);
 
@@ -54,43 +41,36 @@ async function cargarProductos() {
     mostrarProducto();
 }
 
-cargarProductos();
-
 async function mostrarProducto() {
 
     const codigo =
         document.getElementById("producto").value;
 
-    const { data } =
+    const { data, error } =
         await supabase
             .from("inventario")
             .select("*")
             .eq("codigo", codigo)
             .single();
 
-    if (!data) return;
+    if (error) {
+        console.error(error);
+        return;
+    }
 
-    document.getElementById(
-        "detalleProducto"
-    ).innerHTML = `
-    
-    <h3>${data.producto}</h3>
-
-    <p>Categoria: ${data.categoria}</p>
-
-    <p>Público: ${data.publico}</p>
-
-    <p>Precio: $${data.precio_unitario}</p>
-
-    <img
-        src="${data.imagenes}"
-        width="200">
+    document.getElementById("detalleProducto")
+        .innerHTML = `
+        <h3>${data.producto}</h3>
+        <p>Categoría: ${data.categoria}</p>
+        <p>Público: ${data.publico}</p>
+        <p>Stock: ${data.stock_inicial}</p>
+        <p>Precio: $${data.precio_unitario}</p>
+        <img src="${data.imagenes}" width="200">
     `;
 }
 
 document
     .getElementById("producto")
-    .addEventListener(
-        "change",
-        mostrarProducto
-    );
+    .addEventListener("change", mostrarProducto);
+
+cargarProductos();
