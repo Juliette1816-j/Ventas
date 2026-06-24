@@ -8,72 +8,154 @@ const supabase = createClient(
     supabaseKey
 );
 
-async function cargarProductos() {
+let inventario = [];
 
-    const { data, error } =
-        await supabase
-            .from("inventario")
-            .select("*")
-            .order("producto");
+async function cargarInventario() {
 
-    if (error) {
-        console.error("Error:", error);
-        return;
-    }
-
-    console.log("Producto:", data);
-    console.log("Imagen:", data.imagenes);
-    
-    const combo =
-        document.getElementById("producto");
-
-    combo.innerHTML = "";
-
-    data.forEach(item => {
-
-        const option =
-            document.createElement("option");
-
-        option.value = item.codigo;
-        option.textContent = item.producto;
-
-        combo.appendChild(option);
-
-    });
-
-    mostrarProducto();
-}
-
-async function mostrarProducto() {
-
-    const codigo =
-        document.getElementById("producto").value;
-
-    const { data, error } =
-        await supabase
-            .from("inventario")
-            .select("*")
-            .eq("codigo", codigo)
-            .single();
-
-    console.log("PRODUCTO SELECCIONADO");
-    console.log(data);
+    const { data, error } = await supabase
+        .from("inventario")
+        .select("*");
 
     if (error) {
         console.error(error);
         return;
     }
 
-    document.getElementById("detalleProducto")
-        .innerHTML = `
-        <h3>${data.producto}</h3>
-        <p>Categoría: ${data.categoria}</p>
-        <p>Público: ${data.publico}</p>
-        <p>Precio: $${data.precio_unitario}</p>
+    inventario = data;
 
-        <img
-            src="${data.imagenes}"
-            width="250"
-            onerror="this.style.border='3px solid red'; console.log('ERROR IMAGEN', this.src);">
+    cargarCategorias();
+}
+
+function cargarCategorias() {
+
+    const categorias =
+        [...new Set(
+            inventario.map(x => x.categoria)
+        )];
+
+    const combo =
+        document.getElementById("categoria");
+
+    combo.innerHTML =
+        "<option>Seleccione</option>";
+
+    categorias.forEach(cat => {
+
+        combo.innerHTML +=
+            `<option>${cat}</option>`;
+
+    });
+}
+
+function cargarPublicos() {
+
+    const categoria =
+        document.getElementById("categoria").value;
+
+    const publicos =
+        [...new Set(
+            inventario
+                .filter(x =>
+                    x.categoria === categoria
+                )
+                .map(x => x.publico)
+        )];
+
+    const combo =
+        document.getElementById("publico");
+
+    combo.innerHTML =
+        "<option>Seleccione</option>";
+
+    publicos.forEach(pub => {
+
+        combo.innerHTML +=
+            `<option>${pub}</option>`;
+
+    });
+}
+
+function cargarProductos() {
+
+    const categoria =
+        document.getElementById("categoria").value;
+
+    const publico =
+        document.getElementById("publico").value;
+
+    const productos =
+        inventario.filter(x =>
+            x.categoria === categoria &&
+            x.publico === publico
+        );
+
+    const combo =
+        document.getElementById("producto");
+
+    combo.innerHTML =
+        "<option>Seleccione</option>";
+
+    productos.forEach(prod => {
+
+        combo.innerHTML += `
+        <option value="${prod.codigo}">
+            ${prod.producto}
+        </option>`;
+    });
+}
+
+function mostrarProducto() {
+
+    const codigo =
+        document.getElementById("producto").value;
+
+    const producto =
+        inventario.find(x =>
+            x.codigo === codigo
+        );
+
+    if (!producto) return;
+
+    document.getElementById(
+        "detalleProducto"
+    ).innerHTML = `
+    
+    <h3>${producto.producto}</h3>
+
+    <p><b>Categoría:</b> ${producto.categoria}</p>
+
+    <p><b>Público:</b> ${producto.publico}</p>
+
+    <p><b>Stock:</b> ${producto.stock_inicial}</p>
+
+    <p><b>Precio:</b>
+    $${producto.precio_unitario}</p>
+
+    <img
+        src="${producto.imagenes}"
+        width="250">
     `;
 }
+
+document
+    .getElementById("categoria")
+    .addEventListener(
+        "change",
+        cargarPublicos
+    );
+
+document
+    .getElementById("publico")
+    .addEventListener(
+        "change",
+        cargarProductos
+    );
+
+document
+    .getElementById("producto")
+    .addEventListener(
+        "change",
+        mostrarProducto
+    );
+
+cargarInventario();
