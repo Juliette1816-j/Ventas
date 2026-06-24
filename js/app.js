@@ -56,6 +56,9 @@ async function mostrarProducto() {
             .eq("codigo", codigo)
             .single();
 
+    console.log("PRODUCTO SELECCIONADO");
+    console.log(data);
+
     if (error) {
         console.error(error);
         return;
@@ -66,14 +69,11 @@ async function mostrarProducto() {
         <h3>${data.producto}</h3>
         <p>Categoría: ${data.categoria}</p>
         <p>Público: ${data.publico}</p>
-        <p>Stock: ${data.stock_inicial}</p>
         <p>Precio: $${data.precio_unitario}</p>
-        <img src="${data.imagenes}" width="200">
+
+        <img
+            src="${data.imagenes}"
+            width="250"
+            onerror="this.style.border='3px solid red'; console.log('ERROR IMAGEN', this.src);">
     `;
 }
-
-document
-    .getElementById("producto")
-    .addEventListener("change", mostrarProducto);
-
-cargarProductos();
