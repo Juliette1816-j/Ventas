@@ -21,6 +21,9 @@ async function cargarProductos() {
         return;
     }
 
+    console.log("Producto:", data);
+    console.log("Imagen:", data.imagenes);
+    
     const combo =
         document.getElementById("producto");
 
