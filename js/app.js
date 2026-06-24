@@ -18,3 +18,40 @@ const supabase = createClient(
 );
 
 console.log("Conectado a Supabase");
+
+async function cargarProductos() {
+
+    const { data, error } =
+        await supabase
+            .from("inventario")
+            .select("*")
+            .order("producto");
+
+    if (error) {
+        console.error(error);
+        return;
+    }
+
+    const combo =
+        document.getElementById("producto");
+
+    combo.innerHTML = "";
+
+    data.forEach(producto => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = producto.codigo;
+
+        option.textContent =
+            producto.producto;
+
+        combo.appendChild(option);
+
+    });
+
+    mostrarProducto();
+}
+
+cargarProductos();
