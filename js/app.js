@@ -55,3 +55,42 @@ async function cargarProductos() {
 }
 
 cargarProductos();
+
+async function mostrarProducto() {
+
+    const codigo =
+        document.getElementById("producto").value;
+
+    const { data } =
+        await supabase
+            .from("inventario")
+            .select("*")
+            .eq("codigo", codigo)
+            .single();
+
+    if (!data) return;
+
+    document.getElementById(
+        "detalleProducto"
+    ).innerHTML = `
+    
+    <h3>${data.producto}</h3>
+
+    <p>Categoria: ${data.categoria}</p>
+
+    <p>Público: ${data.publico}</p>
+
+    <p>Precio: $${data.precio_unitario}</p>
+
+    <img
+        src="${data.imagenes}"
+        width="200">
+    `;
+}
+
+document
+    .getElementById("producto")
+    .addEventListener(
+        "change",
+        mostrarProducto
+    );
