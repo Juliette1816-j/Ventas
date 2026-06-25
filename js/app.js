@@ -360,6 +360,42 @@ function eliminarItem(index) {
 }
 
 /* ===============================
+         PANEL DE PAGO
+=============================== */
+
+function mostrarPanelPago() {
+
+    const cliente =
+        document.getElementById("cliente").value;
+
+    let total = 0;
+
+    carrito.forEach(item => {
+
+        total += item.subtotal;
+
+    });
+
+    document.getElementById("clienteResumen").textContent =
+        cliente || "Cliente General";
+
+    document.getElementById("productosResumen").textContent =
+        carrito.length;
+
+    document.getElementById("totalResumen").textContent =
+        total.toLocaleString();
+
+    document.getElementById("saldoResumen").textContent =
+        total.toLocaleString();
+
+    document.getElementById("estadoResumen").textContent =
+        "Pendiente";
+
+    document.getElementById("panelPago").style.display =
+        "block";
+}
+
+/* ===============================
      FINALIZAR COMPRA
 =============================== */
 
@@ -369,7 +405,9 @@ async function finalizarCompra() {
         return alert("Carrito vacío");
 
     // Mostrar panel de pago
-    document.getElementById("panelPago").style.display = "block";
+    mostrarPanelPago();
+
+    return;
     
     // Salir de la función por ahora
     return;
