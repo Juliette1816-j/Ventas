@@ -1,11 +1,14 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard POS</title>
+</head>
+
+<body>
+
 <h1>Dashboard POS</h1>
-
-const usuario = JSON.parse(localStorage.getItem("usuario"));
-
-if (!usuario) {
-    alert("Debes iniciar sesión");
-    window.location.href = "login.html";
-}
 
 <div>
     <h2>Ventas Hoy</h2>
@@ -22,4 +25,17 @@ if (!usuario) {
     <div id="pendiente"></div>
 </div>
 
+<!-- 🔐 PROTECCIÓN -->
+<script>
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+    if (!usuario) {
+        alert("Debes iniciar sesión");
+        window.location.href = "login.html";
+    }
+</script>
+
 <script type="module" src="js/dashboard.js"></script>
+
+</body>
+</html>
