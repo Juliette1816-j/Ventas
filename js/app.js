@@ -132,7 +132,7 @@ function mostrarProducto() {
     $${producto.precio_unitario}</p>
 
     <img
-      src="https://drive.google.com/thumbnail?id=1SGasQAcLGXJ3eeFFHogDH5MGTpy1R2BV&sz=w1000"
+      src="https://drive.google.com/thumbnail?id=1SGasQAcLGXJ3eeFFHogDH5MGTpy1R2BV=w1000"
       width="250">
 }
 
