@@ -291,25 +291,16 @@ function eliminarItem(index) {
 
 async function finalizarCompra() {
 
-    if (carrito.length === 0) {
-        alert("Carrito vacío");
-        return;
-    }
+    if (carrito.length === 0)
+        return alert("Carrito vacío");
 
-    const cliente =
-        document.getElementById("cliente").value;
+    const cliente = document.getElementById("cliente").value;
+    const medioPago = document.getElementById("medioPagoFinal").value;
+    const estado = document.getElementById("estadoFinal").value;
 
-    const medioPago =
-        document.getElementById("medioPagoFinal").value;
+    let total = carrito.reduce((a, b) => a + b.subtotal, 0);
 
-    const estado =
-        document.getElementById("estadoFinal").value;
-
-    let total = 0;
-
-    carrito.forEach(i => total += i.subtotal);
-
-    // 1. crear venta
+    // 1. CREAR VENTA
     const { data, error } = await supabase
         .from("ventas")
         .insert([{
@@ -317,8 +308,8 @@ async function finalizarCompra() {
             usuario: "Admin",
             estado,
             total_general: total,
-            total_pagado: 0,
-            saldo: total
+            total_pagado: estado === "Pagado" ? total : 0,
+            saldo: estado === "Pagado" ? 0 : total
         }])
         .select()
         .single();
@@ -330,7 +321,7 @@ async function finalizarCompra() {
 
     const ventaId = data.id;
 
-    // 2. detalle
+    // 2. DETALLE
     const detalles = carrito.map(item => ({
         venta_id: ventaId,
         codigo: item.codigo,
@@ -340,11 +331,9 @@ async function finalizarCompra() {
         subtotal: item.subtotal
     }));
 
-    await supabase
-        .from("detalle_ventas")
-        .insert(detalles);
+    await supabase.from("detalle_ventas").insert(detalles);
 
-    // 3. actualizar stock
+    // 3. STOCK
     for (let item of carrito) {
 
         const prod = inventario.find(p => p.codigo === item.codigo);
@@ -362,6 +351,7 @@ async function finalizarCompra() {
     carrito = [];
     renderCarrito();
 }
+      
 
 /* ==========================
    EVENTOS
