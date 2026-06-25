@@ -1,17 +1,31 @@
 body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    margin-top: 100px;
+    font-family: Arial;
+    background: #f4f4f4;
+    padding: 20px;
 }
 
-input {
-    display: block;
-    margin: 10px auto;
-    padding: 10px;
-    width: 250px;
+select, input, button {
+    padding: 8px;
+    margin: 5px;
 }
 
 button {
-    padding: 10px 20px;
     cursor: pointer;
+    background: black;
+    color: white;
+    border: none;
+    padding: 10px;
+}
+
+#carrito {
+    background: white;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.venta {
+    background: white;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 10px;
 }
