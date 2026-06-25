@@ -1,3 +1,10 @@
+const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+if (!usuario) {
+    alert("Debes iniciar sesión");
+    window.location.href = "login.html";
+}
+
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
 const supabase = createClient(
