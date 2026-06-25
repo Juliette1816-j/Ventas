@@ -195,11 +195,6 @@ function mostrarProducto() {
             style="border-radius:10px; margin-top:10px;"
         >
     `;
-
-    // ⚠️ ALERTA STOCK SOLO AQUÍ
-    if (producto.stock_inicial <= 5) {
-        alert(`⚠ Stock bajo: ${producto.producto}`);
-    }
 }
 
 let carrito = [];
