@@ -170,51 +170,37 @@ function mostrarProducto() {
 
     if (!codigo) return;
 
-    const producto =
-        inventario.find(
-            x => x.codigo === codigo
-        );
+    const producto = inventario.find(
+        x => x.codigo === codigo
+    );
 
     if (!producto) return;
 
-    document.getElementById(
-        "detalleProducto"
-    ).innerHTML = `
-
+    document.getElementById("detalleProducto").innerHTML = `
         <h3>${producto.producto}</h3>
 
-        <p><b>Código:</b>
-        ${producto.codigo}</p>
+        <p><b>Código:</b> ${producto.codigo}</p>
 
-        <p><b>Categoría:</b>
-        ${producto.categoria}</p>
+        <p><b>Categoría:</b> ${producto.categoria}</p>
 
-        <p><b>Público:</b>
-        ${producto.publico}</p>
+        <p><b>Público:</b> ${producto.publico}</p>
 
-        <p><b>Stock:</b>
-        ${producto.stock_inicial}</p>
+        <p><b>Stock:</b> ${producto.stock_inicial}</p>
 
-        <p><b>Precio:</b>
-        $${producto.precio_unitario}</p>
+        <p><b>Precio:</b> $${producto.precio_unitario}</p>
 
         <img
             src="${producto.imagenes}"
             width="250"
-            style="
-                border-radius:10px;
-                margin-top:10px;
-            "
+            style="border-radius:10px; margin-top:10px;"
         >
     `;
 
-    const producto = inventario.find(x => x.codigo === codigo);
-
+    // ⚠️ ALERTA STOCK SOLO AQUÍ
     if (producto.stock_inicial <= 5) {
         alert(`⚠ Stock bajo: ${producto.producto}`);
     }
 }
-
 
 let carrito = [];
 
