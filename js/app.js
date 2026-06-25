@@ -10,16 +10,20 @@ const supabase = createClient(
 
 let inventario = [];
 
-// Cargar inventario desde Supabase
+/* ==========================
+   CARGAR INVENTARIO
+========================== */
+
 async function cargarInventario() {
 
-    const { data, error } = await supabase
-        .from("inventario")
-        .select("*")
-        .order("producto");
+    const { data, error } =
+        await supabase
+            .from("inventario")
+            .select("*")
+            .order("producto");
 
     if (error) {
-        console.error("Error cargando inventario:", error);
+        console.error(error);
         return;
     }
 
@@ -30,12 +34,17 @@ async function cargarInventario() {
     cargarCategorias();
 }
 
-// Cargar categorías únicas
+/* ==========================
+   CATEGORIAS
+========================== */
+
 function cargarCategorias() {
 
     const categorias = [
         ...new Set(
-            inventario.map(x => x.categoria?.trim())
+            inventario.map(
+                x => x.categoria?.trim()
+            )
         )
     ];
 
@@ -55,25 +64,28 @@ function cargarCategorias() {
     });
 }
 
-// Cargar públicos según categoría
+/* ==========================
+   PUBLICOS
+========================== */
+
 function cargarPublicos() {
 
     const categoria =
         document.getElementById("categoria").value;
 
-    console.log("Categoría:", categoria);
-
     const publicos = [
         ...new Set(
             inventario
-                .filter(x =>
-                    x.categoria?.trim() === categoria
+                .filter(
+                    x =>
+                        x.categoria?.trim() ===
+                        categoria
                 )
-                .map(x => x.publico?.trim())
+                .map(
+                    x => x.publico?.trim()
+                )
         )
     ];
-
-    console.log("Públicos encontrados:", publicos);
 
     const combo =
         document.getElementById("publico");
@@ -93,11 +105,15 @@ function cargarPublicos() {
     document.getElementById("producto").innerHTML =
         '<option value="">Seleccione producto</option>';
 
-    document.getElementById("detalleProducto").innerHTML =
-        "";
+    document.getElementById(
+        "detalleProducto"
+    ).innerHTML = "";
 }
 
-// Cargar productos según categoría y público
+/* ==========================
+   PRODUCTOS
+========================== */
+
 function cargarProductos() {
 
     const categoria =
@@ -106,16 +122,14 @@ function cargarProductos() {
     const publico =
         document.getElementById("publico").value;
 
-    console.log("Categoría:", categoria);
-    console.log("Público:", publico);
-
     const productos =
-        inventario.filter(x =>
-            x.categoria?.trim() === categoria &&
-            x.publico?.trim() === publico
+        inventario.filter(
+            x =>
+                x.categoria?.trim() ===
+                categoria &&
+                x.publico?.trim() ===
+                publico
         );
-
-    console.log("Productos encontrados:", productos);
 
     const combo =
         document.getElementById("producto");
@@ -132,11 +146,15 @@ function cargarProductos() {
         `;
     });
 
-    document.getElementById("detalleProducto").innerHTML =
-        "";
+    document.getElementById(
+        "detalleProducto"
+    ).innerHTML = "";
 }
 
-// Mostrar detalle del producto
+/* ==========================
+   MOSTRAR PRODUCTO
+========================== */
+
 function mostrarProducto() {
 
     const codigo =
@@ -145,63 +163,227 @@ function mostrarProducto() {
     if (!codigo) return;
 
     const producto =
-        inventario.find(x =>
-            x.codigo === codigo
+        inventario.find(
+            x => x.codigo === codigo
         );
-
-    console.log("Producto seleccionado:", producto);
-    console.log("URL Imagen:", producto.imagenes);
 
     if (!producto) return;
 
     document.getElementById(
         "detalleProducto"
     ).innerHTML = `
+
         <h3>${producto.producto}</h3>
 
-        <p><b>Código:</b> ${producto.codigo}</p>
+        <p><b>Código:</b>
+        ${producto.codigo}</p>
 
-        <p><b>Categoría:</b> ${producto.categoria}</p>
+        <p><b>Categoría:</b>
+        ${producto.categoria}</p>
 
-        <p><b>Público:</b> ${producto.publico}</p>
+        <p><b>Público:</b>
+        ${producto.publico}</p>
 
-        <p><b>Stock:</b> ${producto.stock_inicial}</p>
+        <p><b>Stock:</b>
+        ${producto.stock_inicial}</p>
 
-        <p><b>Precio:</b> $${producto.precio_unitario}</p>
+        <p><b>Precio:</b>
+        $${producto.precio_unitario}</p>
 
         <img
             src="${producto.imagenes}"
-            alt="${producto.producto}"
             width="250"
-            style="border-radius:10px;"
-            onerror="console.log('Error cargando imagen')">
+            style="
+                border-radius:10px;
+                margin-top:10px;
+            "
+        >
     `;
 }
 
-//Medios de pago
-const medioPago =
-document.getElementById("medioPago").value;
+/* ==========================
+   REGISTRAR VENTA
+========================== */
 
-const estado =
-document.getElementById("estado").value;
+async function registrarVenta() {
 
-const { error } =
-await supabase
-.from("ventas")
-.insert([
-{
-    codigo: producto.codigo,
-    producto: producto.producto,
-    cantidad: cantidad,
-    precio_unitario: producto.precio_unitario,
-    total: total,
-    cliente: cliente,
-    medio_pago: medioPago,
-    estado: estado
+    const codigo =
+        document.getElementById("producto").value;
+
+    const cantidad =
+        parseInt(
+            document.getElementById(
+                "cantidad"
+            ).value
+        );
+
+    const cliente =
+        document.getElementById(
+            "cliente"
+        ).value;
+
+    const medioPago =
+        document.getElementById(
+            "medioPago"
+        ).value;
+
+    const estado =
+        document.getElementById(
+            "estado"
+        ).value;
+
+    const observacion =
+        document.getElementById(
+            "observacion"
+        ).value;
+
+    const producto =
+        inventario.find(
+            x => x.codigo === codigo
+        );
+
+    if (!producto) {
+
+        alert(
+            "Seleccione un producto"
+        );
+
+        return;
+    }
+
+    if (
+        !cantidad ||
+        cantidad <= 0
+    ) {
+
+        alert(
+            "Ingrese una cantidad válida"
+        );
+
+        return;
+    }
+
+    if (
+        cantidad >
+        producto.stock_inicial
+    ) {
+
+        alert(
+            "Stock insuficiente"
+        );
+
+        return;
+    }
+
+    const total =
+        cantidad *
+        producto.precio_unitario;
+
+    const { error } =
+        await supabase
+            .from("ventas")
+            .insert([{
+
+                codigo:
+                    producto.codigo,
+
+                producto:
+                    producto.producto,
+
+                cantidad:
+                    cantidad,
+
+                precio_unitario:
+                    producto.precio_unitario,
+
+                total:
+                    total,
+
+                cliente:
+                    cliente,
+
+                medio_pago:
+                    medioPago,
+
+                estado:
+                    estado,
+
+                observacion:
+                    observacion,
+
+                usuario:
+                    "Administrador"
+
+            }]);
+
+    if (error) {
+
+        console.error(error);
+
+        alert(
+            "Error guardando venta"
+        );
+
+        return;
+    }
+
+    const nuevoStock =
+        producto.stock_inicial -
+        cantidad;
+
+    const {
+        error: errorStock
+    } =
+        await supabase
+            .from("inventario")
+            .update({
+                stock_inicial:
+                    nuevoStock
+            })
+            .eq(
+                "codigo",
+                producto.codigo
+            );
+
+    if (errorStock) {
+
+        console.error(errorStock);
+
+        alert(
+            "Error actualizando stock"
+        );
+
+        return;
+    }
+
+    producto.stock_inicial =
+        nuevoStock;
+
+    mostrarProducto();
+
+    alert(
+        `Venta registrada correctamente
+
+Total: $${total}`
+    );
+
+    document.getElementById(
+        "cantidad"
+    ).value = "";
+
+    document.getElementById(
+        "cliente"
+    ).value = "";
+
+    document.getElementById(
+        "observacion"
+    ).value = "";
 }
-]);
 
-// Eventos
+/* ==========================
+   EVENTOS
+========================== */
+
 document
     .getElementById("categoria")
     .addEventListener(
@@ -222,156 +404,16 @@ document
         "change",
         mostrarProducto
     );
+
 document
-.getElementById("btnVenta")
-.addEventListener(
-    "click",
-    registrarVenta
-);
+    .getElementById("btnVenta")
+    .addEventListener(
+        "click",
+        registrarVenta
+    );
 
-// Inicio
+/* ==========================
+   INICIO
+========================== */
+
 cargarInventario();
-
-async function registrarVenta() {
-
-    const codigo =
-    document.getElementById("producto").value;
-    
-    const cantidad =
-    parseInt(
-    document.getElementById("cantidad").value
-    );
-    
-    const cliente =
-    document.getElementById("cliente").value;
-    
-    const medioPago =
-    document.getElementById("medioPago").value;
-    
-    const estado =
-    document.getElementById("estado").value;
-    
-    const observacion =
-    document.getElementById("observacion").value;
-
-}
-
-const producto =
-inventario.find(
-x => x.codigo === codigo
-);
-
-if(!producto){
-
-    alert(
-    "Seleccione un producto"
-    );
-
-    return;
-}
-if(
-!cantidad ||
-cantidad <= 0
-){
-    alert(
-    "Ingrese una cantidad válida"
-    );
-
-    return;
-}
-if(
-cantidad >
-producto.stock_inicial
-){
-    alert(
-    "Stock insuficiente"
-    );
-
-    return;
-}
-const total =
-cantidad *
-producto.precio_unitario;
-
-const { error } =
-await supabase
-.from("ventas")
-.insert([{
-
-    codigo:
-    producto.codigo,
-
-    producto:
-    producto.producto,
-
-    cantidad:
-    cantidad,
-
-    precio_unitario:
-    producto.precio_unitario,
-
-    total:
-    total,
-
-    cliente:
-    cliente,
-
-    medio_pago:
-    medioPago,
-
-    estado:
-    estado,
-
-    observacion:
-    observacion,
-
-    usuario:
-    "Administrador"
-
-}]);
-if(error){
-
-    console.error(error);
-
-    alert(
-    "Error guardando venta"
-    );
-
-    return;
-}
-const nuevoStock =
-producto.stock_inicial -
-cantidad;
-const { error: errorStock } =
-await supabase
-.from("inventario")
-.update({
-
-    stock_inicial:
-    nuevoStock
-
-})
-.eq(
-    "codigo",
-    producto.codigo
-);
-
-producto.stock_inicial =
-nuevoStock;
-alert(
-`Venta registrada
-
-Total: $${total}`
-);
-document.getElementById(
-"cantidad"
-).value = "";
-
-document.getElementById(
-"cliente"
-).value = "";
-
-document.getElementById(
-"observacion"
-).value = "";
-mostrarProducto();
