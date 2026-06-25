@@ -128,33 +128,12 @@ function mostrarProducto() {
 
     <p><b>Stock:</b> ${producto.stock_inicial}</p>
 
-    <p><b>Precio:</b>
-    $${producto.precio_unitario}</p>
+    <p><b>Precio:</b> $${producto.precio_unitario}</p>
 
     <img
-      src="https://drive.google.com/thumbnail?id=1SGasQAcLGXJ3eeFFHogDH5MGTpy1R2BV=w1000"
-      width="250">
+        src="${producto.imagenes}"
+        width="250"
+        alt="${producto.producto}">
+    `;
 }
-
-document
-    .getElementById("categoria")
-    .addEventListener(
-        "change",
-        cargarPublicos
-    );
-
-document
-    .getElementById("publico")
-    .addEventListener(
-        "change",
-        cargarProductos
-    );
-
-document
-    .getElementById("producto")
-    .addEventListener(
-        "change",
-        mostrarProducto
-    );
-
 cargarInventario();
