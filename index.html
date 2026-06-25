@@ -30,21 +30,25 @@
 
 <hr>
 
-<div id="detalleProducto"></div>
+<div style="display:flex; gap:10px;">
+    <div id="detalleProducto"></div>
+
+    <div>
+        <button id="btnAgregar">
+            Agregar
+        </button>
+    </div>
+</div>
 
 <input type="number" id="cantidad" placeholder="Cantidad">
 
 <br><br>
 
 <input type="text" id="cliente" placeholder="Cliente">
-
+    
 <br><br>
 
 <div id="carrito"></div>
-
-<button id="btnAgregar">
-    Agregar al carrito
-</button>
 
 <button id="btnFinalizar">
     Finalizar compra
@@ -87,7 +91,7 @@
 
     <br><br>
 
-    <label>Abono inicial</label>
+    <label>Pago efectuado</label>
 
     <input
         type="number"
