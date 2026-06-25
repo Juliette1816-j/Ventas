@@ -261,46 +261,102 @@ function agregarAlCarrito() {
          RENDER CARRITO
 =============================== */
 
-
 function renderCarrito() {
 
-    const contenedor =
-        document.getElementById("carrito");
+    const contenedor = document.getElementById("carrito");
 
     if (carrito.length === 0) {
-        contenedor.innerHTML = "<p>Carrito vacío</p>";
+
+        contenedor.innerHTML = `
+            <h3>🛒 Carrito</h3>
+            <p>Carrito vacío</p>
+        `;
+
         return;
     }
 
-    let html = "<h3>🛒 Carrito</h3><ul>";
-
     let total = 0;
+
+    let html = `
+        <h3>🛒 Carrito</h3>
+
+        <table border="1" width="100%" cellpadding="8">
+
+            <tr>
+                <th>Producto</th>
+                <th>Cant.</th>
+                <th>Precio</th>
+                <th>Subtotal</th>
+                <th></th>
+            </tr>
+    `;
 
     carrito.forEach((item, index) => {
 
         total += item.subtotal;
 
         html += `
-            <li>
-                ${item.producto} -
-                ${item.cantidad} x $${item.precio}
-                = $${item.subtotal}
+            <tr>
 
-                <button onclick="eliminarItem(${index})">
-                    X
-                </button>
-            </li>
+                <td>${item.producto}</td>
+
+                <td style="text-align:center;">
+                    ${item.cantidad}
+                </td>
+
+                <td style="text-align:right;">
+                    $${item.precio.toLocaleString()}
+                </td>
+
+                <td style="text-align:right;">
+                    $${item.subtotal.toLocaleString()}
+                </td>
+
+                <td style="text-align:center;">
+
+                    <button
+                        class="btnEliminar"
+                        data-index="${index}">
+                        🗑
+                    </button>
+
+                </td>
+
+            </tr>
         `;
     });
 
-    html += `</ul><h3>Total: $${total}</h3>`;
+    html += `
+        </table>
+
+        <h2 style="text-align:right;">
+            Total:
+            $${total.toLocaleString()}
+        </h2>
+    `;
 
     contenedor.innerHTML = html;
+
+    document
+        .querySelectorAll(".btnEliminar")
+        .forEach(btn => {
+
+            btn.addEventListener("click", () => {
+
+                eliminarItem(btn.dataset.index);
+
+            });
+
+        });
+
 }
 
 function eliminarItem(index) {
+
     carrito.splice(index, 1);
+
     renderCarrito();
+
 }
 
 /* ===============================
