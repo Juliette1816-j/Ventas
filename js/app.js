@@ -132,9 +132,8 @@ function mostrarProducto() {
     $${producto.precio_unitario}</p>
 
     <img
-        src="${producto.imagenes}"
-        width="250">
-    `;
+      src="https://drive.google.com/thumbnail?id=1SGasQAcLGXJ3eeFFHogDH5MGTpy1R2BV&sz=w1000"
+      width="250">
 }
 
 document
