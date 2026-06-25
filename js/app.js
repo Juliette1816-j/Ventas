@@ -40,6 +40,7 @@ async function cargarInventario() {
     console.log("Inventario cargado:", inventario);
 
     cargarCategorias();
+    verificarStockBajo();
 }
 
 /* ==========================
