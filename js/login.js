@@ -5,19 +5,18 @@ const supabase = createClient(
   "TU_KEY"
 );
 
-const usuario = JSON.parse(localStorage.getItem("usuario"));
-
-if (!usuario) {
-    alert("Debes iniciar sesión");
-    window.location.href = "login.html";
-}
-
+// SOLO evento de login
 document.getElementById("loginBtn").addEventListener("click", login);
 
 async function login() {
 
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    if (!username || !password) {
+        alert("Completa los campos");
+        return;
+    }
 
     const { data, error } = await supabase
         .from("perfiles")
@@ -27,14 +26,21 @@ async function login() {
         .single();
 
     if (error || !data) {
+        console.log(error);
         alert("Usuario o contraseña incorrectos");
         return;
     }
 
-    // guardar sesión simple
-    localStorage.setItem("usuario", JSON.stringify(data));
+    // guardar sesión
+    localStorage.setItem("usuario", JSON.stringify({
+        id: data.id,
+        nombre: data.nombre,
+        rol: data.rol,
+        username: data.username
+    }));
 
     alert("Bienvenido " + data.nombre);
 
-    window.location.href = "dashboard.html";
+    // redirigir
+    window.location.href = "index.html"; // o dashboard.html
 }
