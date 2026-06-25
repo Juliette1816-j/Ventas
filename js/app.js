@@ -10,6 +10,12 @@ const supabase = createClient(
 
 const usuario = JSON.parse(localStorage.getItem("usuario"));
 
+if (!usuario) {
+    alert("Debes iniciar sesión");
+    window.location.href = "login.html";
+}
+
+
 let inventario = [];
 
 /* ==========================
