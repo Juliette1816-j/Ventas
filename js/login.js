@@ -1,3 +1,12 @@
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+const supabase = createClient(
+  "https://jzuxaxlnguvsvlmymkge.supabase.co",
+  "TU_KEY"
+);
+
+document.getElementById("loginBtn").addEventListener("click", login);
+
 async function login() {
 
     const username = document.getElementById("username").value;
@@ -15,14 +24,10 @@ async function login() {
         return;
     }
 
-    localStorage.setItem("user", JSON.stringify({
-        id: data.id,
-        username: data.username,
-        nombre: data.nombre,
-        rol: data.rol
-    }));
+    // guardar sesión simple
+    localStorage.setItem("usuario", JSON.stringify(data));
 
     alert("Bienvenido " + data.nombre);
 
-    window.location.href = "index.html";
+    window.location.href = "dashboard.html";
 }
