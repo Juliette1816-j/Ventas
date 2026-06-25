@@ -186,6 +186,11 @@ function mostrarProducto() {
         <p><b>Público:</b> ${producto.publico}</p>
 
         <p><b>Stock:</b> ${producto.stock_inicial}</p>
+        ${producto.stock_inicial <= 5 ? `
+            <p style="color:red; font-weight:bold;">
+                ⚠ Stock bajo
+            </p>
+        ` : ""}
 
         <p><b>Precio:</b> $${producto.precio_unitario}</p>
 
@@ -689,6 +694,9 @@ document
 document
     .getElementById("btnConfirmarVenta")
     .addEventListener("click", confirmarVenta);
+
+document.getElementById("montoPago")
+    .addEventListener("input", actualizarEstadoPago);
 
 /* ==========================
    INICIO
