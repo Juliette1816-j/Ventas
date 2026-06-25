@@ -526,10 +526,17 @@ document
     );
 
 document
-    .getElementById("btnVenta")
+    .getElementById("btnAgregar")
     .addEventListener(
         "click",
-        registrarVenta
+        agregarAlCarrito
+    );
+
+document
+    .getElementById("btnFinalizar")
+    .addEventListener(
+        "click",
+        finalizarCompra
     );
 
 /* ==========================
