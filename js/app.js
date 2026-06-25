@@ -178,31 +178,6 @@ function mostrarProducto() {
     `;
 }
 
-// Eventos
-document
-    .getElementById("categoria")
-    .addEventListener(
-        "change",
-        cargarPublicos
-    );
-
-document
-    .getElementById("publico")
-    .addEventListener(
-        "change",
-        cargarProductos
-    );
-
-document
-    .getElementById("producto")
-    .addEventListener(
-        "change",
-        mostrarProducto
-    );
-
-// Inicio
-cargarInventario();
-
 //Medios de pago
 const medioPago =
 document.getElementById("medioPago").value;
@@ -226,3 +201,177 @@ await supabase
 }
 ]);
 
+// Eventos
+document
+    .getElementById("categoria")
+    .addEventListener(
+        "change",
+        cargarPublicos
+    );
+
+document
+    .getElementById("publico")
+    .addEventListener(
+        "change",
+        cargarProductos
+    );
+
+document
+    .getElementById("producto")
+    .addEventListener(
+        "change",
+        mostrarProducto
+    );
+document
+.getElementById("btnVenta")
+.addEventListener(
+    "click",
+    registrarVenta
+);
+
+// Inicio
+cargarInventario();
+
+async function registrarVenta() {
+
+    const codigo =
+    document.getElementById("producto").value;
+    
+    const cantidad =
+    parseInt(
+    document.getElementById("cantidad").value
+    );
+    
+    const cliente =
+    document.getElementById("cliente").value;
+    
+    const medioPago =
+    document.getElementById("medioPago").value;
+    
+    const estado =
+    document.getElementById("estado").value;
+    
+    const observacion =
+    document.getElementById("observacion").value;
+
+}
+
+const producto =
+inventario.find(
+x => x.codigo === codigo
+);
+
+if(!producto){
+
+    alert(
+    "Seleccione un producto"
+    );
+
+    return;
+}
+if(
+!cantidad ||
+cantidad <= 0
+){
+    alert(
+    "Ingrese una cantidad válida"
+    );
+
+    return;
+}
+if(
+cantidad >
+producto.stock_inicial
+){
+    alert(
+    "Stock insuficiente"
+    );
+
+    return;
+}
+const total =
+cantidad *
+producto.precio_unitario;
+
+const { error } =
+await supabase
+.from("ventas")
+.insert([{
+
+    codigo:
+    producto.codigo,
+
+    producto:
+    producto.producto,
+
+    cantidad:
+    cantidad,
+
+    precio_unitario:
+    producto.precio_unitario,
+
+    total:
+    total,
+
+    cliente:
+    cliente,
+
+    medio_pago:
+    medioPago,
+
+    estado:
+    estado,
+
+    observacion:
+    observacion,
+
+    usuario:
+    "Administrador"
+
+}]);
+if(error){
+
+    console.error(error);
+
+    alert(
+    "Error guardando venta"
+    );
+
+    return;
+}
+const nuevoStock =
+producto.stock_inicial -
+cantidad;
+const { error: errorStock } =
+await supabase
+.from("inventario")
+.update({
+
+    stock_inicial:
+    nuevoStock
+
+})
+.eq(
+    "codigo",
+    producto.codigo
+);
+
+producto.stock_inicial =
+nuevoStock;
+alert(
+`Venta registrada
+
+Total: $${total}`
+);
+document.getElementById(
+"cantidad"
+).value = "";
+
+document.getElementById(
+"cliente"
+).value = "";
+
+document.getElementById(
+"observacion"
+).value = "";
+mostrarProducto();
