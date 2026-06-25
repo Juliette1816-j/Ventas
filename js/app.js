@@ -256,6 +256,11 @@ function agregarAlCarrito() {
     renderCarrito();
 }
 
+/* ===============================
+         RENDER CARRITO
+=============================== */
+
+
 function renderCarrito() {
 
     const contenedor =
@@ -297,6 +302,10 @@ function eliminarItem(index) {
     renderCarrito();
 }
 
+/* ===============================
+     FINALIZAR COMPRA
+=============================== */
+
 async function finalizarCompra() {
 
     if (carrito.length === 0)
@@ -304,7 +313,9 @@ async function finalizarCompra() {
 
     const cliente = document.getElementById("cliente").value;
     const medioPago = document.getElementById("medioPagoFinal").value;
-    const estado = document.getElementById("estadoFinal").value;
+    const montoPago = Number(
+        document.getElementById("montoPago").value
+        ) || 0;
 
     let total = carrito.reduce((a, b) => a + b.subtotal, 0);
 
@@ -314,10 +325,15 @@ async function finalizarCompra() {
         .insert([{
             cliente,
             usuario: "Admin",
-            estado,
+            estado:
+                montoPago >= total
+                    ? "Pagado"
+                    : montoPago > 0
+                    ? "Parcial"
+                    : "Pendiente",
             total_general: total,
-            total_pagado: estado === "Pagado" ? total : 0,
-            saldo: estado === "Pagado" ? 0 : total
+            total_pagado: montoPago,
+            saldo: total - montoPago
         }])
         .select()
         .single();
@@ -341,7 +357,36 @@ async function finalizarCompra() {
 
     await supabase.from("detalle_ventas").insert(detalles);
 
-    // 3. STOCK
+    // 3. REGISTRAR PAGO INICIAL (SI EXISTE)
+
+        if (montoPago > 0) {
+        
+            const { error: errorPago } =
+                await supabase
+                    .from("pagos")
+                    .insert([{
+        
+                        venta_id: ventaId,
+        
+                        monto: montoPago,
+        
+                        medio_pago: medioPago,
+        
+                        observacion: "Pago inicial"
+        
+                    }]);
+        
+            if (errorPago) {
+        
+                console.error(errorPago);
+        
+                alert("Error registrando el pago");
+        
+                return;
+            }
+        }
+
+    // 4. STOCK
     for (let item of carrito) {
 
         const prod = inventario.find(p => p.codigo === item.codigo);
@@ -359,6 +404,10 @@ async function finalizarCompra() {
     carrito = [];
     renderCarrito();
 }
+
+/* ===============================
+     REGISTRAR PAGO
+=============================== */
 
 async function registrarPago(ventaId) {
 
@@ -386,6 +435,10 @@ async function registrarPago(ventaId) {
     await actualizarSaldoVenta(ventaId);
 }
 
+/* ===============================
+     ACTUALIZAR PAGO
+=============================== */
+
 async function actualizarSaldoVenta(ventaId) {
 
     const { data: venta } = await supabase
@@ -411,7 +464,11 @@ async function actualizarSaldoVenta(ventaId) {
             estado: saldo <= 0 ? "Pagado" : "Pendiente"
         })
         .eq("id", ventaId);
-}     
+}   
+
+/* ===============================
+     CARGAR HISTORIAL
+=============================== */
 
 async function cargarHistorial(cliente) {
 
@@ -438,6 +495,10 @@ async function cargarHistorial(cliente) {
     `).join("");
 }
 
+/* ===============================
+           VER PAGOS
+=============================== */
+
 async function verPagos(ventaId) {
 
     const { data } = await supabase
@@ -451,6 +512,10 @@ async function verPagos(ventaId) {
         ).join("\n")
     );
 }
+
+/* ===============================
+     VERIFICAR STOCK
+=============================== */
 
 function verificarStockBajo() {
 
@@ -474,6 +539,10 @@ function verificarStockBajo() {
 }
 
 verificarStockBajo();
+
+/* ===============================
+           DASHBOARD
+=============================== */
 
 async function cargarDashboard() {
 
