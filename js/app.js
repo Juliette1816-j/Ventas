@@ -377,7 +377,120 @@ async function registrarPago(ventaId) {
 
     await actualizarSaldoVenta(ventaId);
 }
-      
+
+async function actualizarSaldoVenta(ventaId) {
+
+    const { data: venta } = await supabase
+        .from("ventas")
+        .select("*")
+        .eq("id", ventaId)
+        .single();
+
+    const { data: pagos } = await supabase
+        .from("pagos")
+        .select("monto")
+        .eq("venta_id", ventaId);
+
+    let totalPagado = pagos.reduce((a, b) => a + Number(b.monto), 0);
+
+    let saldo = venta.total_general - totalPagado;
+
+    await supabase
+        .from("ventas")
+        .update({
+            total_pagado: totalPagado,
+            saldo: saldo,
+            estado: saldo <= 0 ? "Pagado" : "Pendiente"
+        })
+        .eq("id", ventaId);
+}     
+
+async function cargarHistorial(cliente) {
+
+    const { data } = await supabase
+        .from("ventas")
+        .select("*")
+        .ilike("cliente", `%${cliente}%`)
+        .order("fecha", { ascending: false });
+
+    const contenedor = document.getElementById("historial");
+
+    contenedor.innerHTML = data.map(v => `
+        <div class="venta">
+            <h4>Venta #${v.id}</h4>
+            <p>Total: $${v.total_general}</p>
+            <p>Pagado: $${v.total_pagado}</p>
+            <p>Saldo: $${v.saldo}</p>
+            <p>Estado: ${v.estado}</p>
+
+            <button onclick="verPagos(${v.id})">
+                Ver pagos
+            </button>
+        </div>
+    `).join("");
+}
+
+async function verPagos(ventaId) {
+
+    const { data } = await supabase
+        .from("pagos")
+        .select("*")
+        .eq("venta_id", ventaId);
+
+    alert(
+        data.map(p =>
+            `${p.fecha} - $${p.monto} (${p.medio_pago})`
+        ).join("\n")
+    );
+}
+
+function verificarStockBajo() {
+
+    const bajos = inventario.filter(p =>
+        p.stock_inicial <= 5
+    );
+
+    const contenedor =
+        document.getElementById("alertas");
+
+    if (bajos.length === 0) {
+        contenedor.innerHTML = "✔ Stock OK";
+        return;
+    }
+
+    contenedor.innerHTML = bajos.map(p => `
+        <p style="color:red;">
+            ⚠ ${p.producto} - Stock: ${p.stock_inicial}
+        </p>
+    `).join("");
+}
+
+verificarStockBajo();
+
+async function cargarDashboard() {
+
+    const { data: ventas } = await supabase
+        .from("ventas")
+        .select("*");
+
+    let totalVentas = ventas.length;
+
+    let ingresos = ventas.reduce((a, b) =>
+        a + Number(b.total_general), 0
+    );
+
+    let saldoTotal = ventas.reduce((a, b) =>
+        a + Number(b.saldo), 0
+    );
+
+    document.getElementById("dashboard").innerHTML = `
+        <h3>📊 Dashboard</h3>
+        <p>Ventas: ${totalVentas}</p>
+        <p>Ingresos: $${ingresos}</p>
+        <p>Saldo pendiente: $${saldoTotal}</p>
+    `;
+}
+
 
 /* ==========================
    EVENTOS
