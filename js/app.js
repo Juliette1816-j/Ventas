@@ -40,7 +40,6 @@ async function cargarInventario() {
     console.log("Inventario cargado:", inventario);
 
     cargarCategorias();
-    verificarStockBajo();
 }
 
 /* ==========================
@@ -208,6 +207,12 @@ function mostrarProducto() {
             "
         >
     `;
+
+    const producto = inventario.find(x => x.codigo === codigo);
+
+    if (producto.stock_inicial <= 5) {
+        alert(`⚠ Stock bajo: ${producto.producto}`);
+    }
 }
 
 
@@ -515,6 +520,13 @@ async function confirmarVenta() {
     document.getElementById("panelPago").style.display = "none";
     document.getElementById("cliente").value = "";
     document.getElementById("montoPago").value = "";
+
+    // reset resumen
+    document.getElementById("clienteResumen").textContent = "";
+    document.getElementById("productosResumen").textContent = "0";
+    document.getElementById("totalResumen").textContent = "0";
+    document.getElementById("saldoResumen").textContent = "0";
+    document.getElementById("estadoResumen").textContent = "Pendiente";
 
     await cargarInventario();
 
