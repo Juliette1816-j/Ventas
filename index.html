@@ -11,60 +11,55 @@
 
 <body>
 
-    <h1>POS Ventas</h1>
-const usuario = JSON.parse(localStorage.getItem("usuario"));
+<h1>POS Ventas</h1>
 
-if (!usuario) {
-    alert("Debes iniciar sesión");
-    window.location.href = "login.html";
-}
-    <label>Categoría</label>
-    <select id="categoria"></select>
-    <br><br>
-    <label>Público</label>
-    <select id="publico"></select>
-    <br><br>
-    <label>Producto</label>
-    <select id="producto"></select>
-    <hr>
-    
-    <div id="detalleProducto"></div>
+<!-- FORMULARIO -->
 
-    <input
-        type="number"
-        id="cantidad"
-        placeholder="Cantidad">
+<label>Categoría</label>
+<select id="categoria"></select>
 
-    <br><br>
+<br><br>
 
-    <input
-        type="text"
-        id="cliente"
-        placeholder="Cliente">
+<label>Público</label>
+<select id="publico"></select>
 
-    <br><br>
+<br><br>
 
-    <label>Medio de pago</label>
-    
-    <select id="medioPago">
-        <option>Pendiente</option>
-        <option>Efectivo</option>
-        <option>Breve</option>
-    </select>
-    
-    <br><br>
+<label>Producto</label>
+<select id="producto"></select>
 
-    <label>Estado</label>
-    
-    <select id="estado">
-        <option>Pagado</option>
-        <option>Pendiente</option>
-    </select>
-    <br><br>
+<hr>
 
-    <textarea id="observacion"></textarea>
+<div id="detalleProducto"></div>
 
-     <br><br>
+<input type="number" id="cantidad" placeholder="Cantidad">
+
+<br><br>
+
+<input type="text" id="cliente" placeholder="Cliente">
+
+<br><br>
+
+<label>Medio de pago</label>
+<select id="medioPago">
+    <option>Pendiente</option>
+    <option>Efectivo</option>
+    <option>Transferencia breve</option>
+</select>
+
+<br><br>
+
+<label>Estado</label>
+<select id="estado">
+    <option>Pagado</option>
+    <option>Pendiente</option>
+</select>
+
+<br><br>
+
+<textarea id="observacion" placeholder="Observación"></textarea>
+
+<br><br>
 
 <div id="carrito"></div>
 
@@ -76,7 +71,17 @@ if (!usuario) {
     Finalizar compra
 </button>
 
-    <script type="module" src="js/app.js"></script>
+<!-- 🔐 LOGIN GUARD BIEN HECHO -->
+<script>
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+    if (!usuario) {
+        alert("Debes iniciar sesión");
+        window.location.href = "login.html";
+    }
+</script>
+
+<script type="module" src="js/app.js"></script>
 
 </body>
 </html>
