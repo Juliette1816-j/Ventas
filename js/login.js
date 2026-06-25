@@ -5,6 +5,13 @@ const supabase = createClient(
   "TU_KEY"
 );
 
+const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+if (!usuario) {
+    alert("Debes iniciar sesión");
+    window.location.href = "login.html";
+}
+
 document.getElementById("loginBtn").addEventListener("click", login);
 
 async function login() {
