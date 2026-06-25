@@ -520,6 +520,33 @@ async function confirmarVenta() {
 }
 
 /* ===============================
+     ACTUALIZAR ESTADO PAGO
+=============================== */
+
+function actualizarEstadoPago() {
+
+    const monto = Number(document.getElementById("montoPago").value) || 0;
+
+    const total = carrito.reduce((a, b) => a + b.subtotal, 0);
+
+    const saldo = total - monto;
+
+    let estado = "Pendiente";
+
+    if (monto >= total) {
+        estado = "Pagado";
+    } else if (monto > 0) {
+        estado = "Parcial";
+    }
+
+    document.getElementById("saldoResumen").textContent =
+        saldo.toLocaleString();
+
+    document.getElementById("estadoResumen").textContent =
+        estado;
+}
+
+/* ===============================
      ACTUALIZAR PAGO
 =============================== */
 
