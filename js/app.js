@@ -401,109 +401,13 @@ function mostrarPanelPago() {
 
 async function finalizarCompra() {
 
-    if (carrito.length === 0)
-        return alert("Carrito vacío");
-
-    // Mostrar panel de pago
-    mostrarPanelPago();
-
-    return;
-    
-    // Salir de la función por ahora
-    return;
-
-    const cliente = document.getElementById("cliente").value;
-    const medioPago = document.getElementById("medioPagoFinal").value;
-    const montoPago = Number(
-        document.getElementById("montoPago").value
-        ) || 0;
-
-    let total = carrito.reduce((a, b) => a + b.subtotal, 0);
-
-    // 1. CREAR VENTA
-    const { data, error } = await supabase
-        .from("ventas")
-        .insert([{
-            cliente,
-            usuario: "Admin",
-            estado:
-                montoPago >= total
-                    ? "Pagado"
-                    : montoPago > 0
-                    ? "Parcial"
-                    : "Pendiente",
-            total_general: total,
-            total_pagado: montoPago,
-            saldo: total - montoPago
-        }])
-        .select()
-        .single();
-
-    if (error) {
-        console.error(error);
+    if (carrito.length === 0) {
+        alert("Carrito vacío");
         return;
     }
 
-    const ventaId = data.id;
-
-    // 2. DETALLE
-    const detalles = carrito.map(item => ({
-        venta_id: ventaId,
-        codigo: item.codigo,
-        producto: item.producto,
-        cantidad: item.cantidad,
-        precio_unitario: item.precio,
-        subtotal: item.subtotal
-    }));
-
-    await supabase.from("detalle_ventas").insert(detalles);
-
-    // 3. REGISTRAR PAGO INICIAL (SI EXISTE)
-
-        if (montoPago > 0) {
-        
-            const { error: errorPago } =
-                await supabase
-                    .from("pagos")
-                    .insert([{
-        
-                        venta_id: ventaId,
-        
-                        monto: montoPago,
-        
-                        medio_pago: medioPago,
-        
-                        observacion: "Pago inicial"
-        
-                    }]);
-        
-            if (errorPago) {
-        
-                console.error(errorPago);
-        
-                alert("Error registrando el pago");
-        
-                return;
-            }
-        }
-
-    // 4. STOCK
-    for (let item of carrito) {
-
-        const prod = inventario.find(p => p.codigo === item.codigo);
-
-        await supabase
-            .from("inventario")
-            .update({
-                stock_inicial: prod.stock_inicial - item.cantidad
-            })
-            .eq("codigo", item.codigo);
-    }
-
-    alert("Venta registrada correctamente");
-
-    carrito = [];
-    renderCarrito();
+    // SOLO abrir panel
+    mostrarPanelPago();
 }
 
 /* ===============================
@@ -534,6 +438,87 @@ async function registrarPago(ventaId) {
     }
 
     await actualizarSaldoVenta(ventaId);
+}
+/* ===============================
+     CONFIRMAR VENTA
+=============================== */
+
+async function confirmarVenta() {
+
+    if (carrito.length === 0) {
+        alert("Carrito vacío");
+        return;
+    }
+
+    const cliente = document.getElementById("cliente").value;
+    const medioPago = document.getElementById("medioPagoFinal").value;
+    const abono = parseFloat(document.getElementById("montoPago").value) || 0;
+
+    let total = carrito.reduce((a, b) => a + b.subtotal, 0);
+
+    let total_pagado = abono;
+    let saldo = total - abono;
+
+    let estado = saldo <= 0 ? "Pagado" : "Pendiente";
+
+    // 1. crear venta
+    const { data, error } = await supabase
+        .from("ventas")
+        .insert([{
+            cliente,
+            usuario: "Admin",
+            estado,
+            total_general: total,
+            total_pagado,
+            saldo
+        }])
+        .select()
+        .single();
+
+    if (error) {
+        console.error(error);
+        alert("Error creando venta");
+        return;
+    }
+
+    const ventaId = data.id;
+
+    // 2. detalle
+    const detalles = carrito.map(item => ({
+        venta_id: ventaId,
+        codigo: item.codigo,
+        producto: item.producto,
+        cantidad: item.cantidad,
+        precio_unitario: item.precio,
+        subtotal: item.subtotal
+    }));
+
+    await supabase.from("detalle_ventas").insert(detalles);
+
+    // 3. stock
+    for (let item of carrito) {
+
+        const prod = inventario.find(p => p.codigo === item.codigo);
+
+        await supabase
+            .from("inventario")
+            .update({
+                stock_inicial: prod.stock_inicial - item.cantidad
+            })
+            .eq("codigo", item.codigo);
+    }
+
+    // 4. limpiar sistema
+    carrito = [];
+    renderCarrito();
+
+    document.getElementById("panelPago").style.display = "none";
+    document.getElementById("cliente").value = "";
+    document.getElementById("montoPago").value = "";
+
+    await cargarInventario();
+
+    alert("Venta registrada correctamente");
 }
 
 /* ===============================
@@ -708,6 +693,9 @@ document
         "click",
         finalizarCompra
     );
+document
+    .getElementById("btnConfirmarVenta")
+    .addEventListener("click", confirmarVenta);
 
 /* ==========================
    INICIO
