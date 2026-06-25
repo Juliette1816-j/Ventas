@@ -202,3 +202,27 @@ document
 
 // Inicio
 cargarInventario();
+
+//Medios de pago
+const medioPago =
+document.getElementById("medioPago").value;
+
+const estado =
+document.getElementById("estado").value;
+
+const { error } =
+await supabase
+.from("ventas")
+.insert([
+{
+    codigo: producto.codigo,
+    producto: producto.producto,
+    cantidad: cantidad,
+    precio_unitario: producto.precio_unitario,
+    total: total,
+    cliente: cliente,
+    medio_pago: medioPago,
+    estado: estado
+}
+]);
+
