@@ -380,6 +380,167 @@ Total: $${total}`
     ).value = "";
 }
 
+let carrito = [];
+
+/* ===============================
+     CARRITO VARIAS COMPRAS
+=============================== */
+
+function agregarAlCarrito() {
+
+    const codigo =
+        document.getElementById("producto").value;
+
+    const producto = inventario.find(x =>
+        x.codigo === codigo
+    );
+
+    const cantidad =
+        parseInt(document.getElementById("cantidad").value);
+
+    if (!producto) {
+        alert("Seleccione un producto");
+        return;
+    }
+
+    if (!cantidad || cantidad <= 0) {
+        alert("Cantidad inválida");
+        return;
+    }
+
+    if (cantidad > producto.stock_inicial) {
+        alert("Stock insuficiente");
+        return;
+    }
+
+    const item = {
+        codigo: producto.codigo,
+        producto: producto.producto,
+        cantidad: cantidad,
+        precio: producto.precio_unitario,
+        subtotal: cantidad * producto.precio_unitario
+    };
+
+    carrito.push(item);
+
+    renderCarrito();
+}
+
+function renderCarrito() {
+
+    const contenedor =
+        document.getElementById("carrito");
+
+    if (carrito.length === 0) {
+        contenedor.innerHTML = "<p>Carrito vacío</p>";
+        return;
+    }
+
+    let html = "<h3>🛒 Carrito</h3><ul>";
+
+    let total = 0;
+
+    carrito.forEach((item, index) => {
+
+        total += item.subtotal;
+
+        html += `
+            <li>
+                ${item.producto} -
+                ${item.cantidad} x $${item.precio}
+                = $${item.subtotal}
+
+                <button onclick="eliminarItem(${index})">
+                    X
+                </button>
+            </li>
+        `;
+    });
+
+    html += `</ul><h3>Total: $${total}</h3>`;
+
+    contenedor.innerHTML = html;
+}
+
+function eliminarItem(index) {
+    carrito.splice(index, 1);
+    renderCarrito();
+}
+
+async function finalizarCompra() {
+
+    if (carrito.length === 0) {
+        alert("Carrito vacío");
+        return;
+    }
+
+    const cliente =
+        document.getElementById("cliente").value;
+
+    const medioPago =
+        document.getElementById("medioPagoFinal").value;
+
+    const estado =
+        document.getElementById("estadoFinal").value;
+
+    let total = 0;
+
+    carrito.forEach(i => total += i.subtotal);
+
+    // 1. crear venta
+    const { data, error } = await supabase
+        .from("ventas")
+        .insert([{
+            cliente,
+            usuario: "Admin",
+            estado,
+            total_general: total,
+            total_pagado: 0,
+            saldo: total
+        }])
+        .select()
+        .single();
+
+    if (error) {
+        console.error(error);
+        return;
+    }
+
+    const ventaId = data.id;
+
+    // 2. detalle
+    const detalles = carrito.map(item => ({
+        venta_id: ventaId,
+        codigo: item.codigo,
+        producto: item.producto,
+        cantidad: item.cantidad,
+        precio_unitario: item.precio,
+        subtotal: item.subtotal
+    }));
+
+    await supabase
+        .from("detalle_ventas")
+        .insert(detalles);
+
+    // 3. actualizar stock
+    for (let item of carrito) {
+
+        const prod = inventario.find(p => p.codigo === item.codigo);
+
+        await supabase
+            .from("inventario")
+            .update({
+                stock_inicial: prod.stock_inicial - item.cantidad
+            })
+            .eq("codigo", item.codigo);
+    }
+
+    alert("Venta registrada correctamente");
+
+    carrito = [];
+    renderCarrito();
+}
+
 /* ==========================
    EVENTOS
 ========================== */
