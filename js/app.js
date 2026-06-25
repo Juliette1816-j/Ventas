@@ -8,6 +8,8 @@ const supabase = createClient(
     supabaseKey
 );
 
+const usuario = JSON.parse(localStorage.getItem("usuario"));
+
 let inventario = [];
 
 /* ==========================
