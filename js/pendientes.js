@@ -5,6 +5,7 @@ const supabase = createClient(
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dXhheGxuZ3V2c3ZsbXlta2dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNTI2NjIsImV4cCI6MjA5NzgyODY2Mn0.DatIvM5O6mFz0qhR8tRreB0TCyB8pBMj5FBo0GmMEQo"
 );
 
+// 🔐 LOGIN CHECK
 const usuario = JSON.parse(localStorage.getItem("usuario"));
 
 if (!usuario) {
@@ -12,13 +13,15 @@ if (!usuario) {
     window.location.href = "login.html";
 }
 
-// 🔥 CARGAR VENTAS PENDIENTES
-async function cargarPendientes() {
+// ===============================
+// CARGAR CARTERA
+// ===============================
+async function cargarCartera() {
 
     const { data, error } = await supabase
         .from("ventas")
         .select("*")
-        .eq("estado", "Pendiente");
+        .order("fecha", { ascending: false });
 
     if (error) {
         console.error(error);
@@ -32,16 +35,19 @@ async function cargarPendientes() {
 
         tbody.innerHTML += `
             <tr>
-                <td>Venta #${v.id}</td>
-                <td>$${v.total_general}</td>
+                <td>#${v.id}</td>
                 <td>${v.cliente || "Sin cliente"}</td>
+                <td>$${v.total_general}</td>
+                <td>$${v.total_pagado}</td>
+                <td>$${v.saldo}</td>
+                <td>${v.estado}</td>
                 <td>
                     <button onclick="verDetalle(${v.id})">
-                        Ver detalle
+                        Detalle
                     </button>
 
-                    <button onclick="marcarPagado(${v.id})">
-                        Marcar Pagado
+                    <button onclick="abrirAbono(${v.id})">
+                        Abonar
                     </button>
                 </td>
             </tr>
@@ -49,7 +55,9 @@ async function cargarPendientes() {
     });
 }
 
-// 🔥 VER DETALLE REAL (correcto)
+// ===============================
+// VER DETALLE
+// ===============================
 window.verDetalle = async function(id) {
 
     const { data } = await supabase
@@ -57,25 +65,43 @@ window.verDetalle = async function(id) {
         .select("*")
         .eq("venta_id", id);
 
-    console.log("Detalle venta:", data);
+    let texto = data.map(d =>
+        `${d.producto} - ${d.cantidad} x $${d.precio_unitario}`
+    ).join("\n");
 
-    alert("Revisa consola para ver productos");
+    alert(texto);
 };
 
-// 🔥 MARCAR COMO PAGADO (CORRECTO)
-window.marcarPagado = async function(id) {
+// ===============================
+// ABONAR
+// ===============================
+window.abrirAbono = function(id) {
 
-    // primero recalculamos pagos reales
+    const monto = prompt("Ingrese monto del abono:");
+
+    if (!monto) return;
+
+    registrarAbono(id, Number(monto));
+};
+
+async function registrarAbono(id, monto) {
+
+    // 1. guardar pago
     await supabase
-        .from("ventas")
-        .update({
-            estado: "Pagado",
-            saldo: 0,
-            total_pagado: supabase.raw ? null : undefined // ignorado si no hay pagos reales
-        })
-        .eq("id", id);
+        .from("pagos")
+        .insert([{
+            venta_id: id,
+            monto: monto,
+            medio_pago: "Manual",
+            observacion: "Abono desde cartera"
+        }]);
 
-    cargarPendientes();
-};
+    // 2. recalcular saldo (TU FUNCIÓN EXISTENTE)
+    await actualizarSaldoVenta(id);
 
-cargarPendientes();
+    alert("Abono registrado");
+
+    cargarCartera();
+}
+
+cargarCartera();
