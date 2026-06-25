@@ -12,7 +12,12 @@
 <body>
 
     <h1>POS Ventas</h1>
+const usuario = JSON.parse(localStorage.getItem("usuario"));
 
+if (!usuario) {
+    alert("Debes iniciar sesión");
+    window.location.href = "login.html";
+}
     <label>Categoría</label>
     <select id="categoria"></select>
     <br><br>
