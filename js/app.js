@@ -351,6 +351,32 @@ async function finalizarCompra() {
     carrito = [];
     renderCarrito();
 }
+
+async function registrarPago(ventaId) {
+
+    const monto = parseFloat(document.getElementById("montoPago").value);
+    const medio = document.getElementById("medioPagoPago").value;
+
+    if (!monto || monto <= 0) {
+        return alert("Monto inválido");
+    }
+
+    const { error } = await supabase
+        .from("pagos")
+        .insert([{
+            venta_id: ventaId,
+            monto,
+            medio_pago: medio,
+            observacion: "Abono"
+        }]);
+
+    if (error) {
+        console.error(error);
+        return;
+    }
+
+    await actualizarSaldoVenta(ventaId);
+}
       
 
 /* ==========================
