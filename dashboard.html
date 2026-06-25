@@ -1,5 +1,12 @@
 <h1>Dashboard POS</h1>
 
+const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+if (!usuario) {
+    alert("Debes iniciar sesión");
+    window.location.href = "login.html";
+}
+
 <div>
     <h2>Ventas Hoy</h2>
     <div id="hoy"></div>
