@@ -150,6 +150,7 @@ function mostrarProducto() {
         );
 
     console.log("Producto seleccionado:", producto);
+    console.log("URL Imagen:", producto.imagenes);
 
     if (!producto) return;
 
