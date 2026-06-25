@@ -5,6 +5,8 @@ const supabase = createClient(
     "TU_ANON_KEY"
 );
 
+usuario: usuario.nombre
+
 async function cargarVentas() {
 
     const { data, error } = await supabase
