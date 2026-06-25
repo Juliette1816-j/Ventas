@@ -312,6 +312,12 @@ async function finalizarCompra() {
     if (carrito.length === 0)
         return alert("Carrito vacío");
 
+    // Mostrar panel de pago
+    document.getElementById("panelPago").style.display = "block";
+    
+    // Salir de la función por ahora
+    return;
+
     const cliente = document.getElementById("cliente").value;
     const medioPago = document.getElementById("medioPagoFinal").value;
     const montoPago = Number(
