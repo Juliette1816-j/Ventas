@@ -52,14 +52,21 @@ function cargarPublicos() {
     const categoria =
         document.getElementById("categoria").value;
 
+    console.log("Categoria seleccionada:", categoria);
+
+    const filtrados =
+        inventario.filter(x =>
+            x.categoria === categoria
+        );
+
+    console.log("Filtrados:", filtrados);
+
     const publicos =
         [...new Set(
-            inventario
-                .filter(x =>
-                    x.categoria === categoria
-                )
-                .map(x => x.publico)
+            filtrados.map(x => x.publico)
         )];
+
+    console.log("Publicos:", publicos);
 
     const combo =
         document.getElementById("publico");
@@ -71,7 +78,6 @@ function cargarPublicos() {
 
         combo.innerHTML +=
             `<option>${pub}</option>`;
-
     });
 }
 
