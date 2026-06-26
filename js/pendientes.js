@@ -104,4 +104,35 @@ async function registrarAbono(id, monto) {
     cargarCartera();
 }
 
+/* ===============================
+     ACTUALIZAR PAGO
+=============================== */
+
+async function actualizarSaldoVenta(ventaId) {
+
+    const { data: venta } = await supabase
+        .from("ventas")
+        .select("*")
+        .eq("id", ventaId)
+        .single();
+
+    const { data: pagos } = await supabase
+        .from("pagos")
+        .select("monto")
+        .eq("venta_id", ventaId);
+
+    let totalPagado = pagos.reduce((a, b) => a + Number(b.monto), 0);
+
+    let saldo = venta.total_general - totalPagado;
+
+    await supabase
+        .from("ventas")
+        .update({
+            total_pagado: totalPagado,
+            saldo: saldo,
+            estado: saldo <= 0 ? "Pagado" : "Pendiente"
+        })
+        .eq("id", ventaId);
+}   
+
 cargarCartera();
