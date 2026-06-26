@@ -514,9 +514,53 @@ async function confirmarVenta() {
     document.getElementById("saldoResumen").textContent = "0";
     document.getElementById("estadoResumen").textContent = "Pendiente";
 
-    await cargarInventario();
+    inventario = inventario.map(p => {
+    const item = carrito.find(c => c.codigo === p.codigo);
+
+    if (item) {
+        return {
+            ...p,
+            stock_inicial: p.stock_inicial - item.cantidad
+        };
+    }
+
+    return p;
+});
 
     alert("Venta registrada correctamente");
+}
+
+/* ===============================
+     ACTUALIZAR RESUMEN PAGO
+=============================== */
+
+function actualizarResumenPago() {
+
+    let total = carrito.reduce((a, b) => a + b.subtotal, 0);
+
+    let abono = parseFloat(document.getElementById("montoPago").value) || 0;
+
+    let saldo = total - abono;
+
+    let estado = "Pendiente";
+
+    if (saldo <= 0) estado = "Pagado";
+    else if (abono > 0) estado = "Parcial";
+
+    document.getElementById("clienteResumen").textContent =
+        document.getElementById("cliente").value || "Cliente General";
+
+    document.getElementById("productosResumen").textContent =
+        carrito.length;
+
+    document.getElementById("totalResumen").textContent =
+        total.toLocaleString();
+
+    document.getElementById("saldoResumen").textContent =
+        saldo.toLocaleString();
+
+    document.getElementById("estadoResumen").textContent =
+        estado;
 }
 
 /* ===============================
@@ -724,6 +768,12 @@ document
 
 document.getElementById("montoPago")
     .addEventListener("input", actualizarEstadoPago);
+
+document.getElementById("montoPago")
+    .addEventListener("input", actualizarResumenPago);
+
+document.getElementById("cliente")
+    .addEventListener("input", actualizarResumenPago);
 
 /* ==========================
    INICIO
