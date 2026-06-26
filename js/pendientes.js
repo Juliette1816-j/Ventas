@@ -110,29 +110,53 @@ async function registrarAbono(id, monto) {
 
 async function actualizarSaldoVenta(ventaId) {
 
-    const { data: venta } = await supabase
+    console.log("🔵 actualizando venta:", ventaId);
+
+    const { data: venta, error: errVenta } = await supabase
         .from("ventas")
         .select("*")
         .eq("id", ventaId)
         .single();
 
-    const { data: pagos } = await supabase
+    if (errVenta || !venta) {
+        console.error("❌ error venta:", errVenta);
+        return;
+    }
+
+    const { data: pagos, error: errPagos } = await supabase
         .from("pagos")
         .select("monto")
         .eq("venta_id", ventaId);
 
-    let totalPagado = pagos.reduce((a, b) => a + Number(b.monto), 0);
+    if (errPagos) {
+        console.error("❌ error pagos:", errPagos);
+        return;
+    }
 
-    let saldo = venta.total_general - totalPagado;
+    let totalPagado = (pagos || []).reduce(
+        (a, b) => a + Number(b.monto),
+        0
+    );
 
-    await supabase
+    let saldo = Number(venta.total_general) - totalPagado;
+
+    console.log("💰 totalPagado:", totalPagado);
+    console.log("💰 saldo:", saldo);
+
+    const { error: errUpdate } = await supabase
         .from("ventas")
         .update({
             total_pagado: totalPagado,
             saldo: saldo,
-            estado: saldo <= 0 ? "Pagado" : "Pendiente"
+            estado: saldo <= 0 ? "Pagado" : "Parcial"
         })
         .eq("id", ventaId);
-}   
+
+    if (errUpdate) {
+        console.error("❌ error update ventas:", errUpdate);
+    } else {
+        console.log("✔ venta actualizada correctamente");
+    }
+}
 
 cargarCartera();
