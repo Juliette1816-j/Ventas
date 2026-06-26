@@ -49,7 +49,6 @@ async function cargarInventario() {
 
   inventario = data;
   cargarCategorias();
-  verificarStockBajo();
 }
 
 /* ============================================
