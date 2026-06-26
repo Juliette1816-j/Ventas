@@ -1,61 +1,106 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Historial de Ventas</title>
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Historial de Ventas</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
 
-<h1>Historial de Ventas</h1>
+  <nav class="navbar">
+    <span class="navbar-logo">✨ POS</span>
+    <div class="navbar-nav">
+      <a href="dashboard.html">📊 Dashboard</a>
+      <a href="index.html">🛒 Ventas</a>
+      <a href="ventas.html" class="activo">📈 Historial</a>
+      <a href="pendientes.html">💳 Cartera</a>
+      <a href="inventario.html">📦 Inventario</a>
+    </div>
+    <div class="navbar-acciones">
+      <span class="navbar-usuario" id="usuarioInfo"></span>
+      <button class="btn-peligro btn-salir" onclick="cerrarSesion()">🚪 Salir</button>
+    </div>
+  </nav>
 
-    <div id="navBar">
+  <div class="contenedor">
 
-    <button onclick="go('dashboard.html')">
-        📊 Dashboard
-    </button>
+    <h1 class="page-titulo">📈 Historial de Ventas</h1>
 
-    <button onclick="go('index.html')">
-        🛒 POS
-    </button>
+    <!-- Filtros -->
+    <div class="barra-filtros">
+      <input type="text" id="buscarCliente" placeholder="🔍 Buscar cliente...">
+      <select id="filtroEstado">
+        <option value="">Todos los estados</option>
+        <option value="Pagado">Pagado</option>
+        <option value="Parcial">Parcial</option>
+        <option value="Pendiente">Pendiente</option>
+      </select>
+      <input type="date" id="filtroFecha">
+      <button class="btn-outline" id="btnLimpiarFiltros">Limpiar</button>
+    </div>
 
-    <button onclick="go('ventas.html')">
-        📈 Historial
-    </button>
+    <!-- Resumen rápido -->
+    <div class="cards-grid" id="resumenFiltro">
+      <div class="card-stat">
+        <span class="stat-label">Ventas</span>
+        <span class="stat-valor" id="resumenCantidad">—</span>
+      </div>
+      <div class="card-stat">
+        <span class="stat-label">Total facturado</span>
+        <span class="stat-valor" id="resumenTotal">—</span>
+      </div>
+      <div class="card-stat">
+        <span class="stat-label">Total cobrado</span>
+        <span class="stat-valor" id="resumenCobrado">—</span>
+      </div>
+      <div class="card-stat">
+        <span class="stat-label">Saldo pendiente</span>
+        <span class="stat-valor" id="resumenSaldo">—</span>
+      </div>
+    </div>
 
-    <button onclick="go('pendientes.html')">
-        💳 Cartera
-    </button>
+    <!-- Tabla -->
+    <div class="card">
+      <div class="tabla-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Fecha</th>
+              <th>Cliente</th>
+              <th>Vendedor</th>
+              <th>Total</th>
+              <th>Pagado</th>
+              <th>Saldo</th>
+              <th>Estado</th>
+              <th>Detalle</th>
+            </tr>
+          </thead>
+          <tbody id="tablaVentas">
+            <tr><td colspan="9" class="texto-vacio">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-    <button onclick="go('inventario.html')">
-        📦 Inventario
-    </button>
+  </div>
 
-</div>
+  <!-- MODAL DETALLE -->
+  <div class="modal-overlay" id="modalDetalle" hidden>
+    <div class="modal">
+      <p class="modal-titulo">📋 Detalle venta <span id="detalleId"></span></p>
+      <div id="detalleContenido"></div>
+      <div class="modal-footer">
+        <button class="btn-outline" onclick="cerrarModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
 
-<script>
-function go(url){
-    window.location.href = url;
-}
-</script>
-
-<table border="1">
-    <thead>
-        <tr>
-            <th>Fecha</th>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Total</th>
-            <th>Cliente</th>
-            <th>Estado</th>
-        </tr>
-    </thead>
-
-    <tbody id="tablaVentas">
-    </tbody>
-</table>
-
-<script type="module" src="js/ventas.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/ventas.js"></script>
 
 </body>
 </html>
