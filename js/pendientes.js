@@ -1,11 +1,10 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
 const supabase = createClient(
-    "https://jzuxaxlnguvsvlmymkge.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dXhheGxuZ3V2c3ZsbXlta2dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNTI2NjIsImV4cCI6MjA5NzgyODY2Mn0.DatIvM5O6mFz0qhR8tRreB0TCyB8pBMj5FBo0GmMEQo"
-);
 
-// 🔐 LOGIN CHECK
+// ===============================
+// LOGIN CHECK
+// ===============================
 const usuario = JSON.parse(localStorage.getItem("usuario"));
 
 if (!usuario) {
@@ -53,12 +52,14 @@ async function cargarCartera() {
 // ===============================
 // VER DETALLE
 // ===============================
-window.verDetalle = async function(id) {
+window.verDetalle = async function (id) {
 
     const { data } = await supabase
         .from("detalle_ventas")
         .select("*")
         .eq("venta_id", id);
+
+    if (!data) return;
 
     let texto = data.map(d =>
         `${d.producto} - ${d.cantidad} x $${d.precio_unitario}`
@@ -67,52 +68,43 @@ window.verDetalle = async function(id) {
     alert(texto);
 };
 
-/* ===============================
-     ACTUALIZAR PAGOS MASIVOS
-=============================== */
-async function recalcularTodo() {
-
-    const { data: ventas } = await supabase
-        .from("ventas")
-        .select("id");
-
-    for (let v of ventas) {
-        await actualizarSaldoVenta(v.id);
-    }
-
-    console.log("✔ Todo actualizado");
-}
-
 // ===============================
-// ABONAR
+// ABRIR ABONO
 // ===============================
-window.abrirAbono = function(id) {
+window.abrirAbono = function (id) {
 
     const monto = prompt("Ingrese monto del abono:");
 
-    if (!monto) return;
+    if (!monto || isNaN(monto)) return;
 
-    registrarAbono(id, Number(monto));
+    const medio = prompt("Medio de pago: Efectivo / Transferencia Breve") || "Efectivo";
+
+    registrarAbono(id, Number(monto), medio);
 };
 
-/* ===============================
-     REGISTRAR PAGO
-=============================== */
-async function registrarAbono(id, monto) {
+// ===============================
+// REGISTRAR ABONO
+// ===============================
+async function registrarAbono(id, monto, medioPago) {
 
-    console.log("💰 Abono a venta:", id, monto);
+    console.log("💰 Abono venta:", id, monto);
 
     // 1. guardar pago
-    await supabase
+    const { error: errorPago } = await supabase
         .from("pagos")
         .insert([{
             venta_id: id,
             monto: monto,
-            medio_pago: "Manual",
+            medio_pago: medioPago,
             observacion: "Abono desde cartera"
         }]);
 
-    // 2. recalcular venta
+    if (errorPago) {
+        console.error("Error pago:", errorPago);
+        return;
+    }
+
+    // 2. actualizar venta
     await actualizarSaldoVenta(id);
 
     // 3. refrescar tabla
@@ -120,15 +112,15 @@ async function registrarAbono(id, monto) {
 
     alert("✔ Abono registrado correctamente");
 }
-/* ===============================
-     ACTUALIZAR PAGO
-=============================== */
 
+// ===============================
+// ACTUALIZAR VENTA (CRÍTICO)
+// ===============================
 async function actualizarSaldoVenta(ventaId) {
 
     const { data: venta } = await supabase
         .from("ventas")
-        .select("*")
+        .select("total_general")
         .eq("id", ventaId)
         .single();
 
@@ -142,9 +134,14 @@ async function actualizarSaldoVenta(ventaId) {
         0
     );
 
-    let saldo = Number(venta.total_general) - totalPagado;
+    let total = Number(venta.total_general);
+    let saldo = total - totalPagado;
 
-    await supabase
+    console.log("TOTAL:", total);
+    console.log("PAGADO:", totalPagado);
+    console.log("SALDO:", saldo);
+
+    const { error } = await supabase
         .from("ventas")
         .update({
             total_pagado: totalPagado,
@@ -152,7 +149,15 @@ async function actualizarSaldoVenta(ventaId) {
             estado: saldo <= 0 ? "Pagado" : "Parcial"
         })
         .eq("id", ventaId);
+
+    if (error) {
+        console.error("ERROR UPDATE VENTA:", error);
+    }
 }
 
+// ===============================
 // INIT
-cargarCartera();
+// ===============================
+cargarCartera(); "https://jzuxaxlnguvsvlmymkge.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dXhheGxuZ3V2c3ZsbXlta2dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNTI2NjIsImV4cCI6MjA5NzgyODY2Mn0.DatIvM5O6mFz0qhR8tRreB0TCyB8pBMj5FBo0GmMEQo"
+);
