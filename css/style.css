@@ -736,3 +736,37 @@ tbody td {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--dorado);
 }
+
+/* ============================================
+   FIX MODAL + NAVBAR MÓVIL
+   ============================================ */
+
+/* Forzar modal siempre encima del navbar */
+.modal-overlay {
+  z-index: 9999 !important;
+}
+
+.modal-overlay[hidden] {
+  display: none !important;
+}
+
+/* Fix botón salir — era aplastado por flex del navbar */
+.btn-salir {
+  width: auto !important;
+  margin-top: 0 !important;
+  padding: 6px 14px !important;
+  font-size: 0.85rem !important;
+  flex-shrink: 0;
+}
+
+/* Navbar en móvil no colapsa el botón salir */
+@media (max-width: 640px) {
+  .navbar {
+    gap: 8px;
+  }
+
+  .navbar-acciones {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
