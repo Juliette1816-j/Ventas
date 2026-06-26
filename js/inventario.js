@@ -70,15 +70,17 @@ async function cargarInventario() {
    RESUMEN CARDS
    ============================================ */
 function actualizarResumen(datos) {
-  const total      = datos.length;
-  const conStock   = datos.filter(p => (p.stock_final ?? calcFinal(p)) > 0).length;
-  const bajo       = datos.filter(p => { const s = p.stock_final ?? calcFinal(p); return s > 0 && s <= 5; }).length;
-  const agotados   = datos.filter(p => (p.stock_final ?? calcFinal(p)) <= 0).length;
+  const total         = datos.length;
+  const unidadesIni   = datos.reduce((a, p) => a + (p.stock_inicial || 0), 0);
+  const unidadesDisp  = datos.reduce((a, p) => a + (p.stock_final ?? calcFinal(p)), 0);
+  const bajo          = datos.filter(p => { const s = p.stock_final ?? calcFinal(p); return s > 0 && s <= 5; }).length;
+  const agotados      = datos.filter(p => (p.stock_final ?? calcFinal(p)) <= 0).length;
 
-  document.getElementById("resumenTotal").textContent    = total;
-  document.getElementById("resumenConStock").textContent = conStock;
-  document.getElementById("resumenBajo").textContent     = bajo;
-  document.getElementById("resumenAgotados").textContent = agotados;
+  document.getElementById("resumenTotal").textContent       = total;
+  document.getElementById("resumenUnidadesIni").textContent = unidadesIni.toLocaleString("es-CO");
+  document.getElementById("resumenUnidadesDisp").textContent= unidadesDisp.toLocaleString("es-CO");
+  document.getElementById("resumenBajo").textContent        = bajo;
+  document.getElementById("resumenAgotados").textContent    = agotados;
 }
 
 function calcFinal(p) {
