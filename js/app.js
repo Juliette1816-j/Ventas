@@ -11,17 +11,23 @@ const sb = createClient(
 );
 
 /* --- Sesión --- */
-const usuario = JSON.parse(localStorage.getItem("usuario"));
-if (!usuario) window.location.href = "login.html";
 
-document.getElementById("usuarioInfo").textContent = `👤 ${usuario.nombre}`;
+window.addEventListener("DOMContentLoaded", async () => {
 
-function cerrarSesion() {
-  localStorage.clear();
-  sessionStorage.clear();
-  window.location.href = "login.html?t=" + Date.now();
-}
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+  if (!usuario) window.location.href = "login.html";
 
+  const info = document.getElementById("usuarioInfo");
+  if (info) info.textContent = `👤 ${usuario.nombre}`;
+
+  try {
+    await cargarInventario();
+    await cargarHistorialHoy();
+  } catch (e) {
+    console.error("Error inicializando app:", e);
+  }
+
+});
 /* --- Estado global --- */
 let inventario = [];
 let carrito    = [];
