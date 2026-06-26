@@ -39,7 +39,7 @@ async function login() {
 
     alert("Bienvenido " + data.nombre);
 
-    if (data.rol === "admin") {
+    if (data.rol === "Administrador") {
         window.location.href = "dashboard.html";
     } else {
         window.location.href = "index.html";
