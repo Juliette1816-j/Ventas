@@ -1,0 +1,146 @@
+cat > /mnt/user-data/outputs/inventario.html << 'EOF'
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventario</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <nav class="navbar">
+    <span class="navbar-logo">✨ POS</span>
+    <div class="navbar-nav">
+      <a href="dashboard.html">📊 Dashboard</a>
+      <a href="index.html">🛒 Ventas</a>
+      <a href="pendientes.html">💳 Cartera</a>
+      <a href="inventario.html" class="activo">📦 Inventario</a>
+    </div>
+    <div class="navbar-acciones">
+      <span class="navbar-usuario" id="usuarioInfo"></span>
+      <button class="btn-peligro btn-salir" onclick="cerrarSesion()">🚪 Salir</button>
+    </div>
+  </nav>
+
+  <div class="contenedor">
+
+    <h1 class="page-titulo">📦 Inventario</h1>
+
+    <!-- Cards resumen -->
+    <div class="cards-grid">
+      <div class="card-stat">
+        <span class="stat-label">Total productos</span>
+        <span class="stat-valor" id="resumenTotal">—</span>
+      </div>
+      <div class="card-stat">
+        <span class="stat-label">Con stock</span>
+        <span class="stat-valor" id="resumenConStock">—</span>
+      </div>
+      <div class="card-stat">
+        <span class="stat-label">Stock bajo (≤5)</span>
+        <span class="stat-valor" id="resumenBajo">—</span>
+      </div>
+      <div class="card-stat">
+        <span class="stat-label">Agotados</span>
+        <span class="stat-valor" id="resumenAgotados">—</span>
+      </div>
+    </div>
+
+    <!-- Importar CSV -->
+    <div class="card">
+      <p class="card-titulo">📥 Carga masiva de productos</p>
+      <p class="texto-ayuda">Descarga la plantilla, complétala en Excel y súbela para importar o actualizar productos.</p>
+      <div class="acciones-producto">
+        <button class="btn-outline" id="btnDescargarPlantilla">⬇ Descargar plantilla CSV</button>
+        <label class="btn-secundario btn-upload" for="archivoCSV">📂 Subir CSV</label>
+        <input type="file" id="archivoCSV" accept=".csv" hidden>
+      </div>
+      <div id="importarResultado"></div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="barra-filtros">
+      <input type="text" id="buscarProducto" placeholder="🔍 Buscar producto...">
+      <select id="filtroCategoria">
+        <option value="">Todas las categorías</option>
+      </select>
+      <select id="filtroStock">
+        <option value="">Todo el stock</option>
+        <option value="ok">Stock OK</option>
+        <option value="bajo">Stock bajo (≤5)</option>
+        <option value="agotado">Agotado</option>
+      </select>
+    </div>
+
+    <!-- Tabla inventario -->
+    <div class="card">
+      <div class="tabla-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Imagen</th>
+              <th>Código</th>
+              <th>Producto</th>
+              <th>Categoría</th>
+              <th>Público</th>
+              <th>Precio</th>
+              <th>Stock inicial</th>
+              <th>Stock salida</th>
+              <th>Stock final</th>
+              <th>Editar</th>
+            </tr>
+          </thead>
+          <tbody id="tablaInventario">
+            <tr><td colspan="10" class="texto-vacio">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL EDITAR PRODUCTO -->
+  <div class="modal-overlay" id="modalEditar" hidden>
+    <div class="modal">
+      <p class="modal-titulo">✏️ Editar producto</p>
+
+      <input type="hidden" id="editCodigo">
+
+      <div class="form-grid">
+        <div class="form-grupo completo">
+          <label>Producto</label>
+          <input type="text" id="editProducto" disabled>
+        </div>
+        <div class="form-grupo">
+          <label>Precio unitario</label>
+          <input type="number" id="editPrecio" min="0">
+        </div>
+        <div class="form-grupo">
+          <label>Stock inicial</label>
+          <input type="number" id="editStockInicial" min="0">
+        </div>
+        <div class="form-grupo completo">
+          <label>URL imagen</label>
+          <input type="text" id="editImagen" placeholder="https://...">
+        </div>
+      </div>
+
+      <div id="previewImagen" class="preview-imagen"></div>
+      <p id="editError" class="msg-error" hidden></p>
+
+      <div class="modal-footer">
+        <button class="btn-outline" onclick="cerrarModal()">Cancelar</button>
+        <button class="btn-primario" id="btnGuardarEdicion">Guardar cambios</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/inventario.js"></script>
+
+</body>
+</html>
+EOF
