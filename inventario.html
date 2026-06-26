@@ -30,24 +30,33 @@ cat > /mnt/user-data/outputs/inventario.html << 'EOF'
     <h1 class="page-titulo">📦 Inventario</h1>
 
     <!-- Cards resumen -->
-    <div class="cards-grid">
-      <div class="card-stat">
-        <span class="stat-label">Total productos</span>
-        <span class="stat-valor" id="resumenTotal">—</span>
-      </div>
-      <div class="card-stat">
-        <span class="stat-label">Con stock</span>
-        <span class="stat-valor" id="resumenConStock">—</span>
-      </div>
-      <div class="card-stat">
-        <span class="stat-label">Stock bajo (≤5)</span>
-        <span class="stat-valor" id="resumenBajo">—</span>
-      </div>
-      <div class="card-stat">
-        <span class="stat-label">Agotados</span>
-        <span class="stat-valor" id="resumenAgotados">—</span>
-      </div>
-    </div>
+     <div class="cards-grid">
+  <div class="card-stat">
+    <span class="stat-label">Total productos</span>
+    <span class="stat-valor" id="resumenTotal">—</span>
+    <span class="stat-sub">referencias</span>
+  </div>
+  <div class="card-stat">
+    <span class="stat-label">Unidades iniciales</span>
+    <span class="stat-valor" id="resumenUnidadesIni">—</span>
+    <span class="stat-sub">unidades totales</span>
+  </div>
+  <div class="card-stat">
+    <span class="stat-label">Unidades disponibles</span>
+    <span class="stat-valor" id="resumenUnidadesDisp">—</span>
+    <span class="stat-sub">en stock actual</span>
+  </div>
+  <div class="card-stat">
+    <span class="stat-label">Stock bajo (≤5)</span>
+    <span class="stat-valor" id="resumenBajo">—</span>
+    <span class="stat-sub">referencias</span>
+  </div>
+  <div class="card-stat">
+    <span class="stat-label">Agotados</span>
+    <span class="stat-valor" id="resumenAgotados">—</span>
+    <span class="stat-sub">referencias</span>
+  </div>
+</div>
 
     <!-- Importar CSV -->
     <div class="card">
