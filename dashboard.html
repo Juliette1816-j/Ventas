@@ -7,15 +7,15 @@
 <div id="menuAdmin">
 
     <button onclick="go('index.html')">
-        🛒 Modulo Ventas
+        🛒 Punto de Venta (POS)
     </button>
 
-    <button onclick="go('ventas.html')">
-         📊 Historial Ventas
+    <button onclick="go('historial.html')">
+        📊 Historial de Ventas
     </button>
 
     <button onclick="go('pendientes.html')">
-        💳 Cartera
+        💳 Cartera / Abonos
     </button>
 
     <button onclick="go('inventario.html')">
@@ -29,5 +29,11 @@
 <h2>Resumen general</h2>
 
 <div id="resumen"></div>
+
+<script>
+function go(url){
+    window.location.href = url;
+}
+</script>
 
 <script type="module" src="js/dashboard.js"></script>
