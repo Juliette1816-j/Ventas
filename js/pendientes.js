@@ -172,6 +172,8 @@ async function recalcularTodo() {
     console.log("✔ sincronización completa");
 }
 
+window.recalcularTodo = recalcularTodo;
+
 // ===============================
 // INIT
 // ===============================
