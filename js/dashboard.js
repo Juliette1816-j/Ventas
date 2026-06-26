@@ -53,4 +53,15 @@ async function cargarResumen() {
     `;
 }
 
+// ===============================
+// CERRAR SESIÓN
+// ===============================
+
+function cerrarSesion() {
+  localStorage.clear();
+  sessionStorage.clear();
+  // Fuerza recarga sin caché
+  window.location.href = "login.html?t=" + Date.now();
+}
+
 cargarResumen();
