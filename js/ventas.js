@@ -14,7 +14,7 @@ const supabase = createClient(
 
 usuario: usuario.nombre
 
-async function cargarVentas() {
+ async function cargarVentas() {
 
     const { data, error } = await supabase
         .from("ventas")
@@ -26,9 +26,7 @@ async function cargarVentas() {
         return;
     }
 
-    const tbody =
-        document.getElementById("tablaVentas");
-
+    const tbody = document.getElementById("tablaVentas");
     tbody.innerHTML = "";
 
     data.forEach(v => {
@@ -36,14 +34,16 @@ async function cargarVentas() {
         tbody.innerHTML += `
             <tr>
                 <td>${v.fecha}</td>
-                <td>${v.producto}</td>
-                <td>${v.cantidad}</td>
-                <td>$${v.total}</td>
-                <td>${v.cliente}</td>
+                <td>#${v.id}</td>
+                <td>${v.cliente || "Sin cliente"}</td>
+                <td>$${v.total_general}</td>
+                <td>$${v.total_pagado}</td>
+                <td>$${v.saldo}</td>
                 <td>${v.estado}</td>
             </tr>
         `;
     });
 }
+
 
 cargarVentas();
