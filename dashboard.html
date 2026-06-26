@@ -1,40 +1,115 @@
-<h1>📊 Dashboard Administrativo</h1>
-<link rel="stylesheet" href="css/style.css">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
 
-<div id="usuarioInfo"></div>
+<body>
 
-<hr>
+  <nav class="navbar">
+    <span class="navbar-logo">✨ POS Admin</span>
+    <div class="navbar-nav">
+      <a href="index.html">🛒 Ventas</a>
+      <a href="pendientes.html">💳 Cartera</a>
+      <a href="inventario.html">📦 Inventario</a>
+    </div>
+    <span class="navbar-usuario" id="usuarioInfo"></span>
+  </nav>
 
-<div id="menuAdmin">
+  <div class="contenedor">
 
-    <button onclick="go('index.html')">
-        🛒 Punto de Venta (POS)
-    </button>
+    <h1 class="page-titulo">Dashboard Administrativo</h1>
 
-    <button onclick="go('historial.html')">
-        📊 Historial de Ventas
-    </button>
+    <!-- Cards resumen -->
+    <div class="cards-grid" id="resumen">
+      <div class="card-stat">
+        <span class="stat-label">Total Ventas</span>
+        <span class="stat-valor" id="totalVentas">—</span>
+      </div>
+      <div class="card-stat">
+        <span class="stat-label">Cartera Pendiente</span>
+        <span class="stat-valor" id="totalCartera">—</span>
+      </div>
+      <div class="card-stat">
+        <span class="stat-label">Ventas con Saldo</span>
+        <span class="stat-valor" id="ventasPendientes">—</span>
+      </div>
+      <div class="card-stat">
+        <span class="stat-label">Total Cobrado</span>
+        <span class="stat-valor" id="totalCobrado">—</span>
+      </div>
+    </div>
 
-    <button onclick="go('pendientes.html')">
-        💳 Cartera / Abonos
-    </button>
+    <!-- Menú accesos rápidos -->
+    <div class="card">
+      <p class="card-titulo">Accesos rápidos</p>
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <button class="btn-primario" style="width:auto;" onclick="window.location.href='index.html'">🛒 Punto de Venta</button>
+        <button class="btn-secundario" onclick="window.location.href='pendientes.html'">💳 Cartera / Abonos</button>
+        <button class="btn-outline" onclick="window.location.href='inventario.html'">📦 Inventario</button>
+      </div>
+    </div>
 
-    <button onclick="go('inventario.html')">
-        📦 Inventario
-    </button>
+  </div>
 
-</div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    const { createClient } = supabase;
+    const sb = createClient(
+      "https://jzuxaxlnguvsvlmymkge.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dXhheGxuZ3V2c3ZsbXlta2dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNTI2NjIsImV4cCI6MjA5NzgyODY2Mn0.DatIvM5O6mFz0qhR8tRreB0TCyB8pBMj5FBo0GmMEQo"
+    );
 
-<hr>
+    // Validar sesión
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
+    if (!usuario) {
+      window.location.href = "login.html";
+    }
 
-<h2>Resumen general</h2>
+    if (usuario.rol !== "Administrador") {
+      window.location.href = "index.html";
+    }
 
-<div id="resumen"></div>
+    document.getElementById("usuarioInfo").textContent =
+      `👤 ${usuario.nombre} (${usuario.rol})`;
 
-<script>
-function go(url){
-    window.location.href = url;
-}
-</script>
+    // Formatear moneda
+    function fmt(n) {
+      return "$" + Number(n || 0).toLocaleString("es-CO");
+    }
 
-<script type="module" src="js/dashboard.js"></script>
+    async function cargarResumen() {
+      const { data: ventas, error } = await sb
+        .from("ventas")
+        .select("total_general, total_pagado, saldo");
+
+      if (error || !ventas) return;
+
+      let totalVentas   = 0;
+      let totalCartera  = 0;
+      let totalCobrado  = 0;
+      let pendientes    = 0;
+
+      ventas.forEach(v => {
+        totalVentas  += Number(v.total_general || 0);
+        totalCobrado += Number(v.total_pagado  || 0);
+        if (v.saldo > 0) {
+          totalCartera += Number(v.saldo || 0);
+          pendientes++;
+        }
+      });
+
+      document.getElementById("totalVentas").textContent      = fmt(totalVentas);
+      document.getElementById("totalCartera").textContent     = fmt(totalCartera);
+      document.getElementById("totalCobrado").textContent     = fmt(totalCobrado);
+      document.getElementById("ventasPendientes").textContent = pendientes;
+    }
+
+    cargarResumen();
+  </script>
+
+</body>
+</html>
