@@ -48,3 +48,4 @@ async function login() {
     else {
       window.location.href = "index.html";
       }
+}
