@@ -1,0 +1,27 @@
+<h1>💳 Abonos de Ventas</h1>
+
+<input id="ventaId" placeholder="ID Venta">
+<button onclick="buscarVenta()">Buscar</button>
+
+<div id="infoVenta"></div>
+
+<input id="montoAbono" type="number" placeholder="Monto">
+<input id="medioPago" placeholder="Medio de pago">
+<input id="observacion" placeholder="Observación">
+
+<button onclick="registrarAbono()">
+    Registrar Abono
+</button>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Monto</th>
+            <th>Medio</th>
+        </tr>
+    </thead>
+    <tbody id="tablaAbonos"></tbody>
+</table>
+
+<script type="module" src="js/abonos.js"></script>
