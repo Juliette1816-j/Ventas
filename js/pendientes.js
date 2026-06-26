@@ -42,13 +42,8 @@ async function cargarCartera() {
                 <td>$${v.saldo}</td>
                 <td>${v.estado}</td>
                 <td>
-                    <button onclick="verDetalle(${v.id})">
-                        Detalle
-                    </button>
-
-                    <button onclick="abrirAbono(${v.id})">
-                        Abonar
-                    </button>
+                    <button onclick="verDetalle(${v.id})">Detalle</button>
+                    <button onclick="abrirAbono(${v.id})">Abonar</button>
                 </td>
             </tr>
         `;
@@ -72,6 +67,22 @@ window.verDetalle = async function(id) {
     alert(texto);
 };
 
+/* ===============================
+     ACTUALIZAR PAGOS MASIVOS
+=============================== */
+async function recalcularTodo() {
+
+    const { data: ventas } = await supabase
+        .from("ventas")
+        .select("id");
+
+    for (let v of ventas) {
+        await actualizarSaldoVenta(v.id);
+    }
+
+    console.log("✔ Todo actualizado");
+}
+
 // ===============================
 // ABONAR
 // ===============================
@@ -84,7 +95,12 @@ window.abrirAbono = function(id) {
     registrarAbono(id, Number(monto));
 };
 
+/* ===============================
+     REGISTRAR PAGO
+=============================== */
 async function registrarAbono(id, monto) {
+
+    console.log("💰 Abono a venta:", id, monto);
 
     // 1. guardar pago
     await supabase
@@ -96,42 +112,30 @@ async function registrarAbono(id, monto) {
             observacion: "Abono desde cartera"
         }]);
 
-    // 2. recalcular saldo (TU FUNCIÓN EXISTENTE)
-    await actualizarSaldoVenta(ventaId);
+    // 2. recalcular venta
+    await actualizarSaldoVenta(id);
 
-    alert("Abono registrado");
+    // 3. refrescar tabla
+    await cargarCartera();
 
-    cargarCartera();
+    alert("✔ Abono registrado correctamente");
 }
-
 /* ===============================
      ACTUALIZAR PAGO
 =============================== */
 
 async function actualizarSaldoVenta(ventaId) {
 
-    console.log("🔵 actualizando venta:", ventaId);
-
-    const { data: venta, error: errVenta } = await supabase
+    const { data: venta } = await supabase
         .from("ventas")
         .select("*")
         .eq("id", ventaId)
         .single();
 
-    if (errVenta || !venta) {
-        console.error("❌ error venta:", errVenta);
-        return;
-    }
-
-    const { data: pagos, error: errPagos } = await supabase
+    const { data: pagos } = await supabase
         .from("pagos")
         .select("monto")
         .eq("venta_id", ventaId);
-
-    if (errPagos) {
-        console.error("❌ error pagos:", errPagos);
-        return;
-    }
 
     let totalPagado = (pagos || []).reduce(
         (a, b) => a + Number(b.monto),
@@ -140,10 +144,7 @@ async function actualizarSaldoVenta(ventaId) {
 
     let saldo = Number(venta.total_general) - totalPagado;
 
-    console.log("💰 totalPagado:", totalPagado);
-    console.log("💰 saldo:", saldo);
-
-    const { error: errUpdate } = await supabase
+    await supabase
         .from("ventas")
         .update({
             total_pagado: totalPagado,
@@ -151,12 +152,7 @@ async function actualizarSaldoVenta(ventaId) {
             estado: saldo <= 0 ? "Pagado" : "Parcial"
         })
         .eq("id", ventaId);
-
-    if (errUpdate) {
-        console.error("❌ error update ventas:", errUpdate);
-    } else {
-        console.log("✔ venta actualizada correctamente");
-    }
 }
 
+// INIT
 cargarCartera();
