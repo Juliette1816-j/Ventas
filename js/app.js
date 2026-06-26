@@ -416,36 +416,7 @@ async function cargarHistorialHoy() {
     </div>
   `;
 }
-
-/* ============================================
-   ALERTAS DE STOCK BAJO
-   ============================================ */
-function verificarStockBajo() {
-  const bajos = inventario.filter(p => {
-    const stock = p.stock_final ?? p.stock_inicial ?? 0;
-    return stock <= 5;
-  });
-
-  const contenedor = document.getElementById("alertas");
-  if (bajos.length === 0) {
-    contenedor.innerHTML = "";
-    return;
-  }
-
-  contenedor.innerHTML = `
-    <div class="card">
-      <p class="card-titulo">⚠ Productos con stock bajo</p>
-      ${bajos.map(p => {
-        const stock = p.stock_final ?? p.stock_inicial ?? 0;
-        return `<p class="${stock <= 0 ? 'stock-bajo' : 'stock-medio'}">
-          ${p.producto} — Stock: ${stock}
-        </p>`;
-      }).join("")}
-    </div>
-  `;
-}
-
-/* ============================================
+ ============================================
    MENSAJE FLASH
    ============================================ */
 function mostrarMensaje(texto, tipo) {
