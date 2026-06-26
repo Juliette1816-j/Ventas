@@ -1,50 +1,125 @@
-<h1>💳 Cartera de Clientes</h1>
-<link rel="stylesheet" href="css/style.css">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cartera de Clientes</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/style.css">
+</head>
 
-<div id="navBar">
+<body>
 
-    <button onclick="go('dashboard.html')">
-        📊 Dashboard
-    </button>
+  <nav class="navbar">
+    <span class="navbar-logo">✨ POS</span>
+    <div class="navbar-nav">
+      <a href="dashboard.html">📊 Dashboard</a>
+      <a href="index.html">🛒 Ventas</a>
+      <a href="pendientes.html" class="activo">💳 Cartera</a>
+      <a href="inventario.html">📦 Inventario</a>
+    </div>
+    <div class="navbar-acciones">
+      <span class="navbar-usuario" id="usuarioInfo"></span>
+      <button class="btn-peligro btn-salir" onclick="cerrarSesion()">🚪 Salir</button>
+    </div>
+  </nav>
 
-    <button onclick="go('index.html')">
-        🛒 POS
-    </button>
+  <div class="contenedor">
 
-    <button onclick="go('historial.html')">
-        📈 Historial
-    </button>
+    <h1 class="page-titulo">💳 Cartera de Clientes</h1>
 
-    <button onclick="go('pendientes.html')">
-        💳 Cartera
-    </button>
+    <!-- Filtros -->
+    <div class="barra-filtros">
+      <input type="text" id="buscarCliente" placeholder="🔍 Buscar por cliente...">
+      <select id="filtroEstado">
+        <option value="">Todos los estados</option>
+        <option value="Pendiente">Pendiente</option>
+        <option value="Parcial">Parcial</option>
+        <option value="Pagado">Pagado</option>
+      </select>
+    </div>
 
-    <button onclick="go('inventario.html')">
-        📦 Inventario
-    </button>
+    <!-- Tabla cartera -->
+    <div class="card">
+      <div class="tabla-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Cliente</th>
+              <th>Total</th>
+              <th>Pagado</th>
+              <th>Saldo</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaPendientes">
+            <tr><td colspan="7" class="texto-vacio">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-</div>
+  </div>
 
-<script>
-function go(url){
-    window.location.href = url;
-}
-</script>
+  <!-- MODAL DETALLE -->
+  <div class="modal-overlay" id="modalDetalle" hidden>
+    <div class="modal">
+      <p class="modal-titulo">📋 Detalle de venta <span id="detalleVentaId"></span></p>
+      <div id="detalleContenido"></div>
+      <div class="modal-footer">
+        <button class="btn-outline" onclick="cerrarModal('modalDetalle')">Cerrar</button>
+      </div>
+    </div>
+  </div>
 
-<table border="1">
-    <thead>
-        <tr>
-            <th>Venta</th>
-            <th>Cliente</th>
-            <th>Total</th>
-            <th>Pagado</th>
-            <th>Saldo</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
+  <!-- MODAL ABONO -->
+  <div class="modal-overlay" id="modalAbono" hidden>
+    <div class="modal">
+      <p class="modal-titulo">💰 Registrar abono</p>
 
-    <tbody id="tablaPendientes"></tbody>
-</table>
+      <p id="abonoResumenCliente" style="margin-bottom:12px; color:var(--texto-medio);"></p>
 
-<script type="module" src="js/pendientes.js"></script>
+      <div class="resumen-venta">
+        <div class="resumen-fila">
+          <span>Total venta</span>
+          <strong id="abonoTotal">—</strong>
+        </div>
+        <div class="resumen-fila">
+          <span>Ya pagado</span>
+          <strong id="abonoPagado">—</strong>
+        </div>
+        <div class="resumen-fila resumen-total">
+          <span>Saldo actual</span>
+          <strong id="abonoSaldo">—</strong>
+        </div>
+      </div>
+
+      <div class="form-grupo">
+        <label for="montoAbono">Monto del abono</label>
+        <input type="number" id="montoAbono" placeholder="0" min="1">
+      </div>
+
+      <div class="form-grupo">
+        <label for="medioAbono">Medio de pago</label>
+        <select id="medioAbono">
+          <option value="Efectivo">Efectivo</option>
+          <option value="Transferencia Breve">Transferencia Breve</option>
+        </select>
+      </div>
+
+      <p id="abonoError" class="msg-error" hidden></p>
+
+      <div class="modal-footer">
+        <button class="btn-outline" onclick="cerrarModal('modalAbono')">Cancelar</button>
+        <button class="btn-primario" id="btnConfirmarAbono">Registrar abono</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/pendientes.js"></script>
+
+</body>
+</html>
