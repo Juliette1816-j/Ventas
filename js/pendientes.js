@@ -97,7 +97,7 @@ async function registrarAbono(id, monto) {
         }]);
 
     // 2. recalcular saldo (TU FUNCIÓN EXISTENTE)
-    await actualizarSaldoVenta(id);
+    await actualizarSaldoVenta(ventaId);
 
     alert("Abono registrado");
 
