@@ -42,5 +42,9 @@ async function login() {
     alert("Bienvenido " + data.nombre);
 
     // redirigir
-    window.location.href = "index.html"; // o dashboard.html
-}
+    if (data.rol === "admin") {
+      window.location.href = "dashboard.html";
+      } 
+    else {
+      window.location.href = "index.html";
+      }
