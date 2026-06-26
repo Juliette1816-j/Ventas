@@ -1,175 +1,158 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <title>POS Ventas</title>
-
-    <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS Ventas</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-<h1>POS Ventas</h1>
-
-    <div id="navBar">
-
-    <button onclick="go('dashboard.html')">
-        📊 Dashboard
-    </button>
-
-    <button onclick="go('index.html')">
-        🛒 POS
-    </button>
-
-    <button onclick="go('historial.html')">
-        📈 Historial
-    </button>
-
-    <button onclick="go('pendientes.html')">
-        💳 Cartera
-    </button>
-
-    <button onclick="go('inventario.html')">
-        📦 Inventario
-    </button>
-
-</div>
-
-<script>
-function go(url){
-    window.location.href = url;
-}
-</script>
-
-<!-- FORMULARIO -->
-
-<label>Categoría</label>
-<select id="categoria"></select>
-
-<br><br>
-
-<label>Público</label>
-<select id="publico"></select>
-
-<br><br>
-
-<label>Producto</label>
-<select id="producto"></select>
-
-<hr>
-
-<div style="display:flex; gap:10px;">
-    <div id="detalleProducto"></div>
-
-    <div>
-        <button id="btnAgregar">
-            Agregar
-        </button>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <span class="navbar-logo">✨ POS</span>
+    <div class="navbar-nav">
+      <a href="dashboard.html">📊 Dashboard</a>
+      <a href="index.html" class="activo">🛒 Ventas</a>
+      <a href="pendientes.html">💳 Cartera</a>
+      <a href="inventario.html">📦 Inventario</a>
     </div>
-</div>
+    <div class="navbar-acciones">
+      <span class="navbar-usuario" id="usuarioInfo"></span>
+      <button class="btn-peligro btn-salir" onclick="cerrarSesion()">🚪 Salir</button>
+    </div>
+  </nav>
 
-<input type="number" id="cantidad" placeholder="Cantidad">
+  <div class="contenedor">
 
-<br><br>
+    <h1 class="page-titulo">Punto de Venta</h1>
 
-<input type="text" id="cliente" placeholder="Cliente">
-    
-<br><br>
+    <!-- SELECCIÓN DE PRODUCTO -->
+    <div class="card">
+      <p class="card-titulo">Seleccionar producto</p>
 
-<div id="carrito"></div>
+      <div class="form-grid">
+        <div class="form-grupo">
+          <label for="categoria">Categoría</label>
+          <select id="categoria">
+            <option value="">Seleccione categoría</option>
+          </select>
+        </div>
 
-<button id="btnFinalizar">
-    Finalizar compra
-</button>
+        <div class="form-grupo">
+          <label for="publico">Público</label>
+          <select id="publico">
+            <option value="">Seleccione público</option>
+          </select>
+        </div>
 
-    <div id="panelPago" style="display:none;">
+        <div class="form-grupo">
+          <label for="producto">Producto</label>
+          <select id="producto">
+            <option value="">Seleccione producto</option>
+          </select>
+        </div>
 
-    <hr>
+        <div class="form-grupo">
+          <label for="cantidad">Cantidad</label>
+          <input type="number" id="cantidad" placeholder="0" min="1">
+        </div>
+      </div>
 
-    <h2>Finalizar compra</h2>
+      <!-- Detalle del producto seleccionado -->
+      <div id="detalleProducto" class="detalle-producto"></div>
 
-    <h3>Resumen de la venta</h3>
+      <div class="acciones-producto">
+        <button class="btn-primario" id="btnAgregar">+ Agregar al carrito</button>
+      </div>
+    </div>
 
-    <p>
-        <b>Cliente:</b>
-        <span id="clienteResumen"></span>
-    </p>
-    
-    <p>
-        <b>Productos:</b>
-        <span id="productosResumen"></span>
-    </p>
-    
-    <p>
-        <b>Total:</b>
-        $<span id="totalResumen">0</span>
-    </p>
-    
-    <hr>
+    <!-- CARRITO -->
+    <div class="card" id="carritoCard">
+      <p class="card-titulo">🛒 Carrito</p>
+      <div id="carrito">
+        <p class="texto-vacio">El carrito está vacío</p>
+      </div>
 
-    <label>Medio de pago</label>
+      <div class="form-grupo" style="margin-top:12px;">
+        <label for="cliente">Cliente</label>
+        <input type="text" id="cliente" placeholder="Nombre del cliente (opcional)">
+      </div>
 
-    <select id="medioPagoFinal">
+      <div class="acciones-producto">
+        <button class="btn-secundario" id="btnFinalizar">Finalizar compra →</button>
+      </div>
+    </div>
 
-        <option>Efectivo</option>
+    <!-- PANEL DE PAGO -->
+    <div class="card" id="panelPago" hidden>
+      <p class="card-titulo">💳 Finalizar compra</p>
 
-        <option>Transferencia Breve</option>
+      <div class="resumen-venta">
+        <div class="resumen-fila">
+          <span>Cliente</span>
+          <strong id="clienteResumen">—</strong>
+        </div>
+        <div class="resumen-fila">
+          <span>Productos</span>
+          <strong id="productosResumen">0</strong>
+        </div>
+        <div class="resumen-fila resumen-total">
+          <span>Total</span>
+          <strong>$<span id="totalResumen">0</span></strong>
+        </div>
+      </div>
 
-    </select>
+      <div class="form-grid">
+        <div class="form-grupo">
+          <label for="medioPagoFinal">Medio de pago</label>
+          <select id="medioPagoFinal">
+            <option value="Efectivo">Efectivo</option>
+            <option value="Transferencia Breve">Transferencia Breve</option>
+            <option value="Pendiente">Pendiente</option>
+          </select>
+        </div>
 
-    <br><br>
+        <div class="form-grupo">
+          <label for="montoPago">Monto pagado</label>
+          <input type="number" id="montoPago" placeholder="0" min="0">
+        </div>
+      </div>
 
-    <label>Pago efectuado</label>
+      <div class="resumen-venta">
+        <div class="resumen-fila">
+          <span>Saldo pendiente</span>
+          <strong>$<span id="saldoResumen">0</span></strong>
+        </div>
+        <div class="resumen-fila">
+          <span>Estado</span>
+          <strong id="estadoResumen">Pendiente</strong>
+        </div>
+      </div>
 
-    <input
-        type="number"
-        id="montoPago"
-        placeholder="0">
+      <div class="modal-footer">
+        <button class="btn-outline" id="btnCancelarPago">← Volver</button>
+        <button class="btn-primario" id="btnConfirmarVenta">✔ Confirmar venta</button>
+      </div>
+    </div>
 
-    <br><br>
-
-    <p>
-        <b>Saldo:</b>
-    
-        $<span id="saldoResumen">0</span>
-    </p>
-    
-    <p>
-        <b>Estado:</b>
-    
-        <span id="estadoResumen">
-            Pendiente
-        </span>
-    </p>
-
-    <br><br>
-
-    <button id="btnConfirmarVenta">
-
-        Confirmar venta
-
-    </button>
-
-</div>
-
-<!-- 🔐 LOGIN GUARD BIEN HECHO -->
-<script>
-    const usuario = JSON.parse(localStorage.getItem("usuario"));
-
-    if (!usuario) {
-        alert("Debes iniciar sesión");
-        window.location.href = "login.html";
-    }
-
-</script>
-
-    <h3>Alertas</h3>
-
+    <!-- ALERTAS DE STOCK -->
     <div id="alertas"></div>
 
-<script type="module" src="js/app.js"></script>
+    <!-- HISTORIAL DEL DÍA -->
+    <div class="card" id="historialCard">
+      <p class="card-titulo">📋 Mis ventas de hoy</p>
+      <div id="historialHoy">
+        <p class="texto-vacio">Sin ventas registradas hoy</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/app.js"></script>
 
 </body>
 </html>
