@@ -16,11 +16,11 @@ if (!usuario) window.location.href = "login.html";
 
 document.getElementById("usuarioInfo").textContent = `👤 ${usuario.nombre}`;
 
-function cerrarSesion() {
+window.cerrarSesion = function () {
   localStorage.clear();
   sessionStorage.clear();
   window.location.href = "login.html?t=" + Date.now();
-}
+};
 
 /* --- Estado --- */
 let ventasData  = [];
@@ -45,8 +45,17 @@ async function cargarCartera() {
     .select("*")
     .order("fecha", { ascending: false });
 
+  // 🔍 DIAGNÓSTICO — ver en consola del navegador (F12)
+  console.log("ventas data:", data);
+  console.log("ventas error:", error);
+
   if (error) {
-    tbody.innerHTML = `<tr><td colspan="7" class="texto-vacio">Error cargando datos</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="texto-vacio">Error: ${error.message}</td></tr>`;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="texto-vacio">Sin registros — verifica RLS en Supabase</td></tr>`;
     return;
   }
 
@@ -113,18 +122,18 @@ document.getElementById("filtroEstado").addEventListener("change", aplicarFiltro
 /* ============================================
    MODAL HELPERS
    ============================================ */
-function abrirModal(id) {
+window.abrirModal = function (id) {
   document.getElementById(id).hidden = false;
-}
+};
 
-function cerrarModal(id) {
+window.cerrarModal = function (id) {
   document.getElementById(id).hidden = true;
-}
+};
 
 /* ============================================
    VER DETALLE
    ============================================ */
-async function verDetalle(ventaId) {
+window.verDetalle = async function (ventaId) {
   document.getElementById("detalleVentaId").textContent = `#${ventaId}`;
   document.getElementById("detalleContenido").innerHTML = `<p class="texto-vacio">Cargando...</p>`;
   abrirModal("modalDetalle");
@@ -133,6 +142,8 @@ async function verDetalle(ventaId) {
     .from("detalle_ventas")
     .select("*")
     .eq("venta_id", ventaId);
+
+  console.log("detalle data:", data, "error:", error);
 
   if (error || !data || data.length === 0) {
     document.getElementById("detalleContenido").innerHTML = `<p class="texto-vacio">Sin productos</p>`;
@@ -163,12 +174,12 @@ async function verDetalle(ventaId) {
       </table>
     </div>
   `;
-}
+};
 
 /* ============================================
    ABRIR MODAL ABONO
    ============================================ */
-function abrirAbono(id, cliente, total, pagado, saldo) {
+window.abrirAbono = function (id, cliente, total, pagado, saldo) {
   ventaActual = { id, cliente, total, pagado, saldo };
 
   document.getElementById("abonoResumenCliente").textContent = `Cliente: ${cliente}`;
@@ -179,7 +190,7 @@ function abrirAbono(id, cliente, total, pagado, saldo) {
   document.getElementById("abonoError").hidden        = true;
 
   abrirModal("modalAbono");
-}
+};
 
 /* ============================================
    CONFIRMAR ABONO
@@ -208,7 +219,6 @@ async function confirmarAbono() {
   btn.textContent = "Guardando...";
 
   try {
-    // 1. Registrar pago
     const { error: errPago } = await sb.from("pagos").insert([{
       venta_id:    ventaActual.id,
       monto,
@@ -218,7 +228,6 @@ async function confirmarAbono() {
 
     if (errPago) throw errPago;
 
-    // 2. Recalcular saldo sumando todos los pagos
     const { data: pagos } = await sb
       .from("pagos")
       .select("monto")
@@ -241,7 +250,7 @@ async function confirmarAbono() {
 
   } catch (err) {
     console.error("Error abono:", err);
-    errorEl.textContent = "Error al registrar el abono. Intenta de nuevo.";
+    errorEl.textContent = `Error: ${err.message || "Intenta de nuevo."}`;
     errorEl.hidden = false;
   } finally {
     btn.disabled = false;
