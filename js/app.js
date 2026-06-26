@@ -13,24 +13,26 @@ const sb = createClient(
 /* --- Sesión --- */
 
 window.addEventListener("DOMContentLoaded", async () => {
-
   const usuario = JSON.parse(localStorage.getItem("usuario"));
   if (!usuario) window.location.href = "login.html";
 
   const info = document.getElementById("usuarioInfo");
   if (info) info.textContent = `👤 ${usuario.nombre}`;
 
-  try {
-    await cargarInventario();
-    await cargarHistorialHoy();
-  } catch (e) {
-    console.error("Error inicializando app:", e);
-  }
+  await cargarInventario();
 
+  // 👇 IMPORTANTE: inicializa selects vacíos
+  document.getElementById("categoria").innerHTML =
+    '<option value="">Seleccione categoría</option>';
+
+  document.getElementById("publico").innerHTML =
+    '<option value="">Seleccione público</option>';
+
+  document.getElementById("producto").innerHTML =
+    '<option value="">Seleccione producto</option>';
+
+  await cargarHistorialHoy();
 });
-/* --- Estado global --- */
-let inventario = [];
-let carrito    = [];
 
 /* ============================================
    FORMATO
