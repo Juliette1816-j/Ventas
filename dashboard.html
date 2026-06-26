@@ -1,41 +1,29 @@
-<!DOCTYPE html>
-<html lang="es">
+<h1>📊 Dashboard Administrativo</h1>
 
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard POS</title>
-</head>
+<div id="usuarioInfo"></div>
 
-<body>
+<hr>
 
-<h1>Dashboard POS</h1>
+<div id="menuAdmin">
 
-<div>
-    <h2>Ventas Hoy</h2>
-    <div id="hoy"></div>
+    <button onclick="go('ventas.html')">
+        🛒 POS Ventas
+    </button>
+
+    <button onclick="go('pendientes.html')">
+        💳 Cartera
+    </button>
+
+    <button onclick="go('inventario.html')">
+        📦 Inventario
+    </button>
+
 </div>
 
-<div>
-    <h2>Ventas Mes</h2>
-    <div id="mes"></div>
-</div>
+<hr>
 
-<div>
-    <h2>Pendiente por Cobrar</h2>
-    <div id="pendiente"></div>
-</div>
+<h2>Resumen general</h2>
 
-<!-- 🔐 PROTECCIÓN -->
-<script>
-    const usuario = JSON.parse(localStorage.getItem("usuario"));
-
-    if (!usuario) {
-        alert("Debes iniciar sesión");
-        window.location.href = "login.html";
-    }
-</script>
+<div id="resumen"></div>
 
 <script type="module" src="js/dashboard.js"></script>
-
-</body>
-</html>
