@@ -1,180 +1,278 @@
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+/* ============================================
+   PENDIENTES.JS — Cartera de Clientes
+   Sin módulos ES · Supabase UMD
+   ============================================ */
 
-const supabase = createClient(
+const { createClient } = supabase;
 
-"https://jzuxaxlnguvsvlmymkge.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dXhheGxuZ3V2c3ZsbXlta2dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNTI2NjIsImV4cCI6MjA5NzgyODY2Mn0.DatIvM5O6mFz0qhR8tRreB0TCyB8pBMj5FBo0GmMEQo"
+const sb = createClient(
+  "https://jzuxaxlnguvsvlmymkge.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dXhheGxuZ3V2c3ZsbXlta2dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNTI2NjIsImV4cCI6MjA5NzgyODY2Mn0.DatIvM5O6mFz0qhR8tRreB0TCyB8pBMj5FBo0GmMEQo"
 );
 
-// ===============================
-// LOGIN CHECK
-// ===============================
+/* --- Sesión --- */
 const usuario = JSON.parse(localStorage.getItem("usuario"));
+if (!usuario) window.location.href = "login.html";
 
-if (!usuario) {
-    alert("Debes iniciar sesión");
-    window.location.href = "login.html";
+document.getElementById("usuarioInfo").textContent = `👤 ${usuario.nombre}`;
+
+function cerrarSesion() {
+  localStorage.clear();
+  sessionStorage.clear();
+  window.location.href = "login.html?t=" + Date.now();
 }
 
-// ===============================
-// CARGAR CARTERA
-// ===============================
+/* --- Estado --- */
+let ventasData  = [];
+let ventaActual = null;
+
+/* ============================================
+   FORMATO
+   ============================================ */
+function fmt(n) {
+  return "$" + Number(n || 0).toLocaleString("es-CO");
+}
+
+/* ============================================
+   CARGAR CARTERA
+   ============================================ */
 async function cargarCartera() {
+  const tbody = document.getElementById("tablaPendientes");
+  tbody.innerHTML = `<tr><td colspan="7" class="texto-vacio">Cargando...</td></tr>`;
 
-    const { data, error } = await supabase
-        .from("ventas")
-        .select("*")
-        .order("fecha", { ascending: false });
+  const { data, error } = await sb
+    .from("ventas")
+    .select("*")
+    .order("fecha", { ascending: false });
 
-    if (error) {
-        console.error(error);
-        return;
-    }
+  if (error) {
+    tbody.innerHTML = `<tr><td colspan="7" class="texto-vacio">Error cargando datos</td></tr>`;
+    return;
+  }
 
-    const tbody = document.getElementById("tablaPendientes");
-    tbody.innerHTML = "";
-
-    data.forEach(v => {
-
-        tbody.innerHTML += `
-            <tr>
-                <td>#${v.id}</td>
-                <td>${v.cliente || "Sin cliente"}</td>
-                <td>$${v.total_general}</td>
-                <td>$${v.total_pagado}</td>
-                <td>$${v.saldo}</td>
-                <td>${v.estado}</td>
-                <td>
-                    <button onclick="verDetalle(${v.id})">Detalle</button>
-                    <button onclick="abrirAbono(${v.id})">Abonar</button>
-                </td>
-            </tr>
-        `;
-    });
+  ventasData = data;
+  renderTabla(ventasData);
 }
 
-// ===============================
-// VER DETALLE
-// ===============================
-window.verDetalle = async function (id) {
+/* ============================================
+   RENDER TABLA
+   ============================================ */
+function renderTabla(datos) {
+  const tbody = document.getElementById("tablaPendientes");
 
-    const { data } = await supabase
-        .from("detalle_ventas")
-        .select("*")
-        .eq("venta_id", id);
+  if (!datos || datos.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="texto-vacio">Sin registros</td></tr>`;
+    return;
+  }
 
-    if (!data) return;
+  tbody.innerHTML = datos.map(v => `
+    <tr>
+      <td>#${v.id}</td>
+      <td>${v.cliente || "Sin cliente"}</td>
+      <td>${fmt(v.total_general)}</td>
+      <td>${fmt(v.total_pagado)}</td>
+      <td>${fmt(v.saldo)}</td>
+      <td>
+        <span class="badge badge-${
+          v.estado === 'Pagado'  ? 'pagado' :
+          v.estado === 'Parcial' ? 'parcial' : 'pendiente'
+        }">${v.estado}</span>
+      </td>
+      <td>
+        <div style="display:flex; gap:6px;">
+          <button class="btn-outline btn-icono" onclick="verDetalle(${v.id})">Ver</button>
+          ${v.saldo > 0
+            ? `<button class="btn-secundario btn-icono" onclick="abrirAbono(${v.id}, '${(v.cliente || 'Sin cliente').replace(/'/g, "\\'")}', ${v.total_general}, ${v.total_pagado}, ${v.saldo})">Abonar</button>`
+            : ""
+          }
+        </div>
+      </td>
+    </tr>
+  `).join("");
+}
 
-    let texto = data.map(d =>
-        `${d.producto} - ${d.cantidad} x $${d.precio_unitario}`
-    ).join("\n");
+/* ============================================
+   FILTROS
+   ============================================ */
+function aplicarFiltros() {
+  const buscar = document.getElementById("buscarCliente").value.toLowerCase();
+  const estado = document.getElementById("filtroEstado").value;
 
-    alert(texto);
-};
+  const filtrado = ventasData.filter(v => {
+    const coincideCliente = (v.cliente || "").toLowerCase().includes(buscar);
+    const coincideEstado  = estado ? v.estado === estado : true;
+    return coincideCliente && coincideEstado;
+  });
 
-// ===============================
-// ABRIR ABONO
-// ===============================
-window.abrirAbono = function (id) {
+  renderTabla(filtrado);
+}
 
-    const monto = prompt("Ingrese monto del abono:");
+document.getElementById("buscarCliente").addEventListener("input", aplicarFiltros);
+document.getElementById("filtroEstado").addEventListener("change", aplicarFiltros);
 
-    if (!monto || isNaN(monto)) return;
+/* ============================================
+   MODAL HELPERS
+   ============================================ */
+function abrirModal(id) {
+  document.getElementById(id).hidden = false;
+}
 
-    const medio = prompt("Medio de pago: Efectivo / Transferencia Breve") || "Efectivo";
+function cerrarModal(id) {
+  document.getElementById(id).hidden = true;
+}
 
-    registrarAbono(id, Number(monto), medio);
-};
+/* ============================================
+   VER DETALLE
+   ============================================ */
+async function verDetalle(ventaId) {
+  document.getElementById("detalleVentaId").textContent = `#${ventaId}`;
+  document.getElementById("detalleContenido").innerHTML = `<p class="texto-vacio">Cargando...</p>`;
+  abrirModal("modalDetalle");
 
-// ===============================
-// REGISTRAR ABONO
-// ===============================
-async function registrarAbono(id, monto, medioPago) {
+  const { data, error } = await sb
+    .from("detalle_ventas")
+    .select("*")
+    .eq("venta_id", ventaId);
 
-    console.log("💰 Abono venta:", id, monto);
+  if (error || !data || data.length === 0) {
+    document.getElementById("detalleContenido").innerHTML = `<p class="texto-vacio">Sin productos</p>`;
+    return;
+  }
 
-    // 1. guardar pago
-    const { error: errorPago } = await supabase
-        .from("pagos")
-        .insert([{
-            venta_id: id,
-            monto: monto,
-            medio_pago: medioPago,
-            observacion: "Abono desde cartera"
-        }]);
+  document.getElementById("detalleContenido").innerHTML = `
+    <div class="tabla-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Cant.</th>
+            <th>Precio unit.</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.map(d => `
+            <tr>
+              <td>${d.producto}</td>
+              <td style="text-align:center;">${d.cantidad}</td>
+              <td style="text-align:right;">${fmt(d.precio_unitario)}</td>
+              <td style="text-align:right;">${fmt(d.subtotal)}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
 
-    if (errorPago) {
-        console.error("Error pago:", errorPago);
-        return;
-    }
+/* ============================================
+   ABRIR MODAL ABONO
+   ============================================ */
+function abrirAbono(id, cliente, total, pagado, saldo) {
+  ventaActual = { id, cliente, total, pagado, saldo };
 
-    // 2. actualizar venta
-    await actualizarSaldoVenta(id);
+  document.getElementById("abonoResumenCliente").textContent = `Cliente: ${cliente}`;
+  document.getElementById("abonoTotal").textContent   = fmt(total);
+  document.getElementById("abonoPagado").textContent  = fmt(pagado);
+  document.getElementById("abonoSaldo").textContent   = fmt(saldo);
+  document.getElementById("montoAbono").value         = "";
+  document.getElementById("abonoError").hidden        = true;
 
-    // 3. refrescar tabla
+  abrirModal("modalAbono");
+}
+
+/* ============================================
+   CONFIRMAR ABONO
+   ============================================ */
+async function confirmarAbono() {
+  const monto = parseFloat(document.getElementById("montoAbono").value);
+  const medio = document.getElementById("medioAbono").value;
+  const errorEl = document.getElementById("abonoError");
+  const btn = document.getElementById("btnConfirmarAbono");
+
+  errorEl.hidden = true;
+
+  if (!monto || monto <= 0) {
+    errorEl.textContent = "Ingresa un monto válido.";
+    errorEl.hidden = false;
+    return;
+  }
+
+  if (monto > ventaActual.saldo) {
+    errorEl.textContent = `El monto supera el saldo pendiente (${fmt(ventaActual.saldo)}).`;
+    errorEl.hidden = false;
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Guardando...";
+
+  try {
+    // 1. Registrar pago
+    const { error: errPago } = await sb.from("pagos").insert([{
+      venta_id:    ventaActual.id,
+      monto,
+      medio_pago:  medio,
+      observacion: "Abono desde cartera"
+    }]);
+
+    if (errPago) throw errPago;
+
+    // 2. Recalcular saldo sumando todos los pagos
+    const { data: pagos } = await sb
+      .from("pagos")
+      .select("monto")
+      .eq("venta_id", ventaActual.id);
+
+    const totalPagado = (pagos || []).reduce((a, b) => a + Number(b.monto), 0);
+    const nuevoSaldo  = Number(ventaActual.total) - totalPagado;
+    const estado      = nuevoSaldo <= 0 ? "Pagado" : "Parcial";
+
+    const { error: errUpdate } = await sb
+      .from("ventas")
+      .update({ total_pagado: totalPagado, saldo: nuevoSaldo, estado })
+      .eq("id", ventaActual.id);
+
+    if (errUpdate) throw errUpdate;
+
+    cerrarModal("modalAbono");
+    mostrarMensaje("✔ Abono registrado correctamente", "exito");
     await cargarCartera();
 
-    alert("✔ Abono registrado correctamente");
+  } catch (err) {
+    console.error("Error abono:", err);
+    errorEl.textContent = "Error al registrar el abono. Intenta de nuevo.";
+    errorEl.hidden = false;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Registrar abono";
+  }
 }
 
-// ===============================
-// ACTUALIZAR VENTA (CRÍTICO)
-// ===============================
-async function actualizarSaldoVenta(ventaId) {
+document.getElementById("btnConfirmarAbono").addEventListener("click", confirmarAbono);
 
-    const { data: venta } = await supabase
-        .from("ventas")
-        .select("total_general")
-        .eq("id", ventaId)
-        .single();
-
-    const { data: pagos } = await supabase
-        .from("pagos")
-        .select("monto")
-        .eq("venta_id", ventaId);
-
-    let totalPagado = (pagos || []).reduce(
-        (a, b) => a + Number(b.monto),
-        0
-    );
-
-    let total = Number(venta.total_general);
-    let saldo = total - totalPagado;
-
-    console.log("TOTAL:", total);
-    console.log("PAGADO:", totalPagado);
-    console.log("SALDO:", saldo);
-
-    const { error } = await supabase
-        .from("ventas")
-        .update({
-            total_pagado: totalPagado,
-            saldo: saldo,
-            estado: saldo <= 0 ? "Pagado" : "Parcial"
-        })
-        .eq("id", ventaId);
-
-    if (error) {
-        console.error("ERROR UPDATE VENTA:", error);
-    }
+/* ============================================
+   MENSAJE FLASH
+   ============================================ */
+function mostrarMensaje(texto, tipo) {
+  const el = document.createElement("div");
+  el.className  = tipo === "exito" ? "msg-exito" : "msg-error";
+  el.textContent = texto;
+  el.style.cssText = "position:fixed;bottom:20px;right:20px;z-index:999;max-width:300px;";
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
 }
 
-async function recalcularTodo() {
+/* ============================================
+   CERRAR MODAL CON CLICK FUERA
+   ============================================ */
+document.querySelectorAll(".modal-overlay").forEach(overlay => {
+  overlay.addEventListener("click", e => {
+    if (e.target === overlay) overlay.hidden = true;
+  });
+});
 
-    const { data: ventas } = await supabase
-        .from("ventas")
-        .select("id");
-
-    for (let v of ventas) {
-        await actualizarSaldoVenta(v.id);
-    }
-
-    console.log("✔ sincronización completa");
-}
-
-window.recalcularTodo = recalcularTodo;
-
-// ===============================
-// INIT
-// ===============================
-cargarCartera(); 
+/* ============================================
+   INICIO
+   ============================================ */
+cargarCartera();
