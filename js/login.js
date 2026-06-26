@@ -5,7 +5,6 @@ const supabase = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dXhheGxuZ3V2c3ZsbXlta2dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNTI2NjIsImV4cCI6MjA5NzgyODY2Mn0.DatIvM5O6mFz0qhR8tRreB0TCyB8pBMj5FBo0GmMEQo"
 );
 
-// SOLO evento de login
 document.getElementById("loginBtn").addEventListener("click", login);
 
 async function login() {
@@ -31,7 +30,6 @@ async function login() {
         return;
     }
 
-    // guardar sesión
     localStorage.setItem("usuario", JSON.stringify({
         id: data.id,
         nombre: data.nombre,
@@ -41,11 +39,9 @@ async function login() {
 
     alert("Bienvenido " + data.nombre);
 
-    // redirigir
     if (data.rol === "admin") {
-      window.location.href = "dashboard.html";
-      } 
-    else {
-      window.location.href = "index.html";
-      }
+        window.location.href = "dashboard.html";
+    } else {
+        window.location.href = "index.html";
+    }
 }
