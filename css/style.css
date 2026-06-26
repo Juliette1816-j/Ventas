@@ -209,6 +209,11 @@ button:active:not(:disabled) {
   transform: scale(0.98);
 }
 
+.btn-salir {
+  padding: 6px 14px;
+  font-size: 0.85rem;
+}
+
 /* ============================================
    MENSAJES (error / éxito)
    ============================================ */
