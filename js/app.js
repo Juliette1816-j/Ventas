@@ -10,29 +10,28 @@ const sb = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dXhheGxuZ3V2c3ZsbXlta2dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNTI2NjIsImV4cCI6MjA5NzgyODY2Mn0.DatIvM5O6mFz0qhR8tRreB0TCyB8pBMj5FBo0GmMEQo"
 );
 
-/* --- Sesión --- */
+/* --- Variables globales --- */
+let usuario   = null;
+let inventario = [];
+let carrito    = [];
 
+/* --- Sesión --- */
 window.addEventListener("DOMContentLoaded", async () => {
-  const usuario = JSON.parse(localStorage.getItem("usuario"));
-  if (!usuario) window.location.href = "login.html";
+  usuario = JSON.parse(localStorage.getItem("usuario"));
+  if (!usuario) { window.location.href = "login.html"; return; }
 
   const info = document.getElementById("usuarioInfo");
   if (info) info.textContent = `👤 ${usuario.nombre}`;
 
   await cargarInventario();
-
-  // 👇 IMPORTANTE: inicializa selects vacíos
-  document.getElementById("categoria").innerHTML =
-    '<option value="">Seleccione categoría</option>';
-
-  document.getElementById("publico").innerHTML =
-    '<option value="">Seleccione público</option>';
-
-  document.getElementById("producto").innerHTML =
-    '<option value="">Seleccione producto</option>';
-
   await cargarHistorialHoy();
 });
+
+window.cerrarSesion = function () {
+  localStorage.clear();
+  sessionStorage.clear();
+  window.location.href = "login.html?t=" + Date.now();
+};
 
 /* ============================================
    FORMATO
@@ -69,11 +68,6 @@ function cargarCategorias() {
 
   const combo = document.getElementById("categoria");
   combo.innerHTML = '<option value="">Seleccione categoría</option>';
-  
-  if (categorias.length === 0) {
-    combo.innerHTML += `<option disabled>Sin categorías disponibles</option>`;
-    return;
-  }
 
   categorias.forEach(cat => {
     combo.innerHTML += `<option value="${cat}">${cat}</option>`;
@@ -84,14 +78,14 @@ function cargarCategorias() {
    PÚBLICOS
    ============================================ */
 function cargarPublicos() {
-  const categoria = document.getElementById("categoria").value;
+  const categoria = document.getElementById("categoria").value.trim();
 
   const publicos = [...new Set(
     inventario
-      .filter(x => x.categoria?.trim() === categoria)
-      .map(x => x.publico?.trim())
+      .filter(x => (x.categoria || "").trim() === categoria)
+      .map(x => (x.publico || "").trim())
       .filter(Boolean)
-  )];
+  )].sort();
 
   const combo = document.getElementById("publico");
   combo.innerHTML = '<option value="">Seleccione público</option>';
@@ -107,11 +101,13 @@ function cargarPublicos() {
    PRODUCTOS
    ============================================ */
 function cargarProductos() {
-  const categoria = document.getElementById("categoria").value;
-  const publico   = document.getElementById("publico").value;
+  const categoria = document.getElementById("categoria").value.trim();
+  const publico   = document.getElementById("publico").value.trim();
 
   const productos = inventario.filter(
-    x => x.categoria?.trim() === categoria && x.publico?.trim() === publico
+    x =>
+      (x.categoria || "").trim() === categoria &&
+      (x.publico   || "").trim() === publico
   );
 
   const combo = document.getElementById("producto");
@@ -127,13 +123,12 @@ function cargarProductos() {
    DETALLE DEL PRODUCTO
    ============================================ */
 function mostrarProducto() {
-  const codigo  = document.getElementById("producto").value;
+  const codigo = document.getElementById("producto").value;
   if (!codigo) return;
 
   const prod = inventario.find(x => x.codigo === codigo);
   if (!prod) return;
 
-  // Usar stock_final si existe, si no stock_inicial
   const stockDisponible = prod.stock_final ?? prod.stock_inicial ?? 0;
   const stockClase = stockDisponible <= 0 ? "stock-bajo" : stockDisponible <= 5 ? "stock-medio" : "stock-ok";
 
@@ -149,8 +144,10 @@ function mostrarProducto() {
         <p><span class="info-label">Categoría</span> ${prod.categoria}</p>
         <p><span class="info-label">Público</span> ${prod.publico}</p>
         <p><span class="info-label">Precio</span> <strong>$${fmt(prod.precio_unitario)}</strong></p>
-        <p><span class="info-label">Stock disponible</span> <span class="${stockClase}">${stockDisponible}</span></p>
-        ${stockDisponible <= 0 ? `<p class="stock-bajo">⚠ Sin stock</p>` : ""}
+        <p><span class="info-label">Stock disponible</span>
+          <span class="${stockClase}"><strong>${stockDisponible}</strong></span>
+        </p>
+        ${stockDisponible <= 0 ? `<p class="stock-bajo">⚠ Sin stock — no disponible para venta</p>` : ""}
       </div>
     </div>
   `;
@@ -164,13 +161,13 @@ function agregarAlCarrito() {
   const cantidad = parseInt(document.getElementById("cantidad").value);
   const prod     = inventario.find(x => x.codigo === codigo);
 
-  if (!prod) return mostrarMensaje("Seleccione un producto", "error");
+  if (!prod)                      return mostrarMensaje("Seleccione un producto", "error");
   if (!cantidad || cantidad <= 0) return mostrarMensaje("Ingrese una cantidad válida", "error");
 
   const stockDisponible = prod.stock_final ?? prod.stock_inicial ?? 0;
+  if (stockDisponible <= 0)       return mostrarMensaje("Este producto está agotado", "error");
   if (cantidad > stockDisponible) return mostrarMensaje(`Stock insuficiente. Disponible: ${stockDisponible}`, "error");
 
-  // Si ya está en el carrito, sumar cantidad
   const existente = carrito.find(x => x.codigo === codigo);
   if (existente) {
     const nuevaCantidad = existente.cantidad + cantidad;
@@ -202,9 +199,9 @@ function renderCarrito() {
     return;
   }
 
-  let total = carrito.reduce((a, b) => a + b.subtotal, 0);
+  const total = carrito.reduce((a, b) => a + b.subtotal, 0);
 
-  let html = `
+  contenedor.innerHTML = `
     <div class="tabla-wrapper">
       <table>
         <thead>
@@ -217,23 +214,17 @@ function renderCarrito() {
           </tr>
         </thead>
         <tbody>
-  `;
-
-  carrito.forEach((item, i) => {
-    html += `
-      <tr>
-        <td>${item.producto}</td>
-        <td style="text-align:center;">${item.cantidad}</td>
-        <td style="text-align:right;">$${fmt(item.precio)}</td>
-        <td style="text-align:right;">$${fmt(item.subtotal)}</td>
-        <td style="text-align:center;">
-          <button class="btn-peligro btn-icono btnEliminar" data-index="${i}">🗑</button>
-        </td>
-      </tr>
-    `;
-  });
-
-  html += `
+          ${carrito.map((item, i) => `
+            <tr>
+              <td>${item.producto}</td>
+              <td style="text-align:center;">${item.cantidad}</td>
+              <td style="text-align:right;">$${fmt(item.precio)}</td>
+              <td style="text-align:right;">$${fmt(item.subtotal)}</td>
+              <td style="text-align:center;">
+                <button class="btn-peligro btn-icono btnEliminar" data-index="${i}">🗑</button>
+              </td>
+            </tr>
+          `).join("")}
         </tbody>
       </table>
     </div>
@@ -242,8 +233,6 @@ function renderCarrito() {
       <strong>$${fmt(total)}</strong>
     </div>
   `;
-
-  contenedor.innerHTML = html;
 
   document.querySelectorAll(".btnEliminar").forEach(btn => {
     btn.addEventListener("click", () => eliminarItem(parseInt(btn.dataset.index)));
@@ -260,7 +249,6 @@ function eliminarItem(index) {
    ============================================ */
 function mostrarPanelPago() {
   if (carrito.length === 0) return mostrarMensaje("El carrito está vacío", "error");
-
   actualizarResumenPago();
   document.getElementById("panelPago").hidden = false;
   document.getElementById("panelPago").scrollIntoView({ behavior: "smooth" });
@@ -268,7 +256,7 @@ function mostrarPanelPago() {
 
 function ocultarPanelPago() {
   document.getElementById("panelPago").hidden = true;
-  document.getElementById("montoPago").value = "";
+  document.getElementById("montoPago").value  = "";
 }
 
 function actualizarResumenPago() {
@@ -277,20 +265,16 @@ function actualizarResumenPago() {
   const saldo = Math.max(total - abono, 0);
   const medio = document.getElementById("medioPagoFinal").value;
 
-  let estado = "Pendiente";
-  if (medio === "Pendiente") {
-    estado = "Pendiente";
-  } else if (saldo <= 0) {
-    estado = "Pagado";
-  } else if (abono > 0) {
-    estado = "Parcial";
-  }
+  const estado =
+    medio === "Pendiente" ? "Pendiente" :
+    saldo <= 0            ? "Pagado"    :
+    abono > 0             ? "Parcial"   : "Pendiente";
 
-  document.getElementById("clienteResumen").textContent    = document.getElementById("cliente").value || "Cliente General";
-  document.getElementById("productosResumen").textContent  = carrito.length;
-  document.getElementById("totalResumen").textContent      = fmt(total);
-  document.getElementById("saldoResumen").textContent      = fmt(saldo);
-  document.getElementById("estadoResumen").textContent     = estado;
+  document.getElementById("clienteResumen").textContent  = document.getElementById("cliente").value || "Cliente General";
+  document.getElementById("productosResumen").textContent = carrito.length;
+  document.getElementById("totalResumen").textContent    = fmt(total);
+  document.getElementById("saldoResumen").textContent    = fmt(saldo);
+  document.getElementById("estadoResumen").textContent   = estado;
 }
 
 /* ============================================
@@ -300,7 +284,7 @@ async function confirmarVenta() {
   if (carrito.length === 0) return mostrarMensaje("El carrito está vacío", "error");
 
   const btn = document.getElementById("btnConfirmarVenta");
-  btn.disabled = true;
+  btn.disabled    = true;
   btn.textContent = "Guardando...";
 
   const cliente   = document.getElementById("cliente").value.trim() || "Cliente General";
@@ -313,7 +297,6 @@ async function confirmarVenta() {
   const estado       = saldo <= 0 ? "Pagado" : total_pagado > 0 ? "Parcial" : "Pendiente";
 
   try {
-    // 1. Crear venta
     const { data: venta, error: errVenta } = await sb
       .from("ventas")
       .insert([{
@@ -329,38 +312,34 @@ async function confirmarVenta() {
 
     if (errVenta) throw errVenta;
 
-    // 2. Insertar detalles (el trigger de Supabase descuenta stock automáticamente)
     const detalles = carrito.map(item => ({
-      venta_id:       venta.id,
-      codigo:         item.codigo,
-      producto:       item.producto,
-      cantidad:       item.cantidad,
+      venta_id:        venta.id,
+      codigo:          item.codigo,
+      producto:        item.producto,
+      cantidad:        item.cantidad,
       precio_unitario: item.precio,
-      subtotal:       item.subtotal
+      subtotal:        item.subtotal
     }));
 
     const { error: errDetalle } = await sb.from("detalle_ventas").insert(detalles);
     if (errDetalle) throw errDetalle;
 
-    // 3. Registrar pago si hubo abono
     if (total_pagado > 0) {
       await sb.from("pagos").insert([{
-        venta_id:   venta.id,
-        monto:      total_pagado,
-        medio_pago: medioPago,
+        venta_id:    venta.id,
+        monto:       total_pagado,
+        medio_pago:  medioPago,
         observacion: "Pago inicial"
       }]);
     }
 
-    // 4. Limpiar
     carrito = [];
     renderCarrito();
     ocultarPanelPago();
-    document.getElementById("cliente").value   = "";
-    document.getElementById("cantidad").value  = "";
+    document.getElementById("cliente").value             = "";
+    document.getElementById("cantidad").value            = "";
     document.getElementById("detalleProducto").innerHTML = "";
 
-    // 5. Recargar inventario con stock actualizado
     await cargarInventario();
     await cargarHistorialHoy();
 
@@ -376,12 +355,12 @@ async function confirmarVenta() {
 }
 
 /* ============================================
-   HISTORIAL DEL DÍA (solo del vendedor)
+   HISTORIAL DEL DÍA
    ============================================ */
 async function cargarHistorialHoy() {
-  const hoy       = new Date();
-  const inicio    = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()).toISOString();
-  const fin       = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 23, 59, 59).toISOString();
+  const hoy    = new Date();
+  const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()).toISOString();
+  const fin    = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 23, 59, 59).toISOString();
 
   const { data, error } = await sb
     .from("ventas")
@@ -421,8 +400,8 @@ async function cargarHistorialHoy() {
               <td>$${fmt(v.saldo)}</td>
               <td>
                 <span class="badge badge-${
-                  v.estado === 'Pagado'   ? 'pagado' :
-                  v.estado === 'Parcial'  ? 'parcial' : 'pendiente'
+                  v.estado === 'Pagado'  ? 'pagado'  :
+                  v.estado === 'Parcial' ? 'parcial' : 'pendiente'
                 }">${v.estado}</span>
               </td>
             </tr>
@@ -432,18 +411,15 @@ async function cargarHistorialHoy() {
     </div>
   `;
 }
- ============================================
+
+/* ============================================
    MENSAJE FLASH
    ============================================ */
 function mostrarMensaje(texto, tipo) {
   const el = document.createElement("div");
-  el.className = tipo === "exito" ? "msg-exito" : "msg-error";
-  el.textContent = texto;
-  el.style.position = "fixed";
-  el.style.bottom   = "20px";
-  el.style.right    = "20px";
-  el.style.zIndex   = "999";
-  el.style.maxWidth = "300px";
+  el.className     = tipo === "exito" ? "msg-exito" : "msg-error";
+  el.textContent   = texto;
+  el.style.cssText = "position:fixed;bottom:20px;right:20px;z-index:9999;max-width:300px;";
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 3500);
 }
@@ -461,9 +437,3 @@ document.getElementById("btnCancelarPago").addEventListener("click", ocultarPane
 document.getElementById("montoPago").addEventListener("input", actualizarResumenPago);
 document.getElementById("medioPagoFinal").addEventListener("change", actualizarResumenPago);
 document.getElementById("cliente").addEventListener("input", actualizarResumenPago);
-
-/* ============================================
-   INICIO
-   ============================================ */
-cargarInventario();
-cargarHistorialHoy();
