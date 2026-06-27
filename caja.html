@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caja</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <nav class="navbar">
+    <span class="navbar-logo">✨ POS</span>
+    <div class="navbar-nav">
+      <a href="dashboard.html">📊 Dashboard</a>
+      <a href="index.html">🛒 Ventas</a>
+      <a href="pendientes.html">💳 Cartera</a>
+      <a href="inventario.html">📦 Inventario</a>
+      <a href="compras.html">🛍 Compras</a>
+      <a href="caja.html" class="activo">💰 Caja</a>
+    </div>
+    <div class="navbar-acciones">
+      <span class="navbar-usuario" id="usuarioInfo"></span>
+      <button class="btn-peligro btn-salir" onclick="cerrarSesion()">🚪 Salir</button>
+    </div>
+  </nav>
+
+  <div class="contenedor">
+
+    <h1 class="page-titulo">💰 Caja</h1>
+
+    <!-- BOLSAS -->
+    <div class="cards-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px,1fr));">
+      <div class="card-stat" style="border-top:4px solid var(--dorado);">
+        <span class="stat-label">💵 Caja disponible</span>
+        <span class="stat-valor" id="saldoCaja">—</span>
+        <span class="stat-sub">dinero en mano</span>
+      </div>
+      <div class="card-stat" style="border-top:4px solid #3498DB;">
+        <span class="stat-label">🔄 Capital acumulado</span>
+        <span class="stat-valor" id="saldoCapital">—</span>
+        <span class="stat-sub">para reinversión</span>
+      </div>
+      <div class="card-stat" style="border-top:4px solid var(--exito);">
+        <span class="stat-label">💸 Ganancias totales</span>
+        <span class="stat-valor" id="saldoGanancias">—</span>
+        <span class="stat-sub">a repartir</span>
+      </div>
+      <div class="card-stat" style="border-top:4px solid var(--rosa);">
+        <span class="stat-label">👩 Socia 1</span>
+        <span class="stat-valor" id="saldoSocia1">—</span>
+        <span class="stat-sub">50% ganancias</span>
+      </div>
+      <div class="card-stat" style="border-top:4px solid var(--rosa);">
+        <span class="stat-label">👩 Socia 2</span>
+        <span class="stat-valor" id="saldoSocia2">—</span>
+        <span class="stat-sub">50% ganancias</span>
+      </div>
+    </div>
+
+    <!-- REGISTRAR MOVIMIENTO -->
+    <div class="card">
+      <p class="card-titulo">➕ Registrar movimiento</p>
+
+      <div class="form-grid">
+        <div class="form-grupo">
+          <label for="tipoMovimiento">Tipo</label>
+          <select id="tipoMovimiento">
+            <option value="ingreso">💵 Ingreso (cobro de venta)</option>
+            <option value="capital">🔄 Salida a capital</option>
+            <option value="ganancia">💸 Desembolso ganancia</option>
+            <option value="gasto">🧾 Gasto operativo</option>
+          </select>
+        </div>
+
+        <div class="form-grupo" id="grupoSocia" hidden>
+          <label for="sociaMovimiento">Socia</label>
+          <select id="sociaMovimiento">
+            <option value="Socia 1">Socia 1</option>
+            <option value="Socia 2">Socia 2</option>
+            <option value="Ambas">Ambas (50/50)</option>
+          </select>
+        </div>
+
+        <div class="form-grupo">
+          <label for="montoMovimiento">Monto</label>
+          <input type="number" id="montoMovimiento" placeholder="0" min="1">
+        </div>
+
+        <div class="form-grupo">
+          <label for="conceptoMovimiento">Concepto</label>
+          <input type="text" id="conceptoMovimiento" placeholder="Descripción del movimiento">
+        </div>
+
+        <div class="form-grupo">
+          <label for="referenciaMovimiento">Referencia (opcional)</label>
+          <input type="text" id="referenciaMovimiento" placeholder="Ej: Lote junio, Venta #32...">
+        </div>
+      </div>
+
+      <p id="movimientoError" class="msg-error" hidden></p>
+
+      <div style="margin-top:14px;">
+        <button class="btn-primario" id="btnRegistrarMovimiento" style="width:auto;">
+          ✔ Registrar movimiento
+        </button>
+      </div>
+    </div>
+
+    <!-- FILTROS MOVIMIENTOS -->
+    <div class="barra-filtros">
+      <select id="filtroTipo">
+        <option value="">Todos los tipos</option>
+        <option value="ingreso">Ingreso</option>
+        <option value="capital">Capital</option>
+        <option value="ganancia">Ganancia</option>
+        <option value="gasto">Gasto</option>
+      </select>
+      <input type="date" id="filtroDesde" title="Desde">
+      <input type="date" id="filtroHasta" title="Hasta">
+      <button class="btn-outline" id="btnLimpiarFiltros">Limpiar</button>
+    </div>
+
+    <!-- TABLA MOVIMIENTOS -->
+    <div class="card">
+      <p class="card-titulo">📋 Movimientos</p>
+      <div class="tabla-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Concepto</th>
+              <th>Socia</th>
+              <th>Referencia</th>
+              <th>Monto</th>
+              <th>Saldo caja</th>
+            </tr>
+          </thead>
+          <tbody id="tablaMovimientos">
+            <tr><td colspan="8" class="texto-vacio">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/caja.js"></script>
+
+</body>
+</html>
