@@ -1014,3 +1014,36 @@ tbody td {
 
 .alerta-roja    { background: #FDE8E8; border-left: 3px solid var(--error); }
 .alerta-naranja { background: var(--dorado-suave); border-left: 3px solid var(--dorado); }
+
+/* ============================================
+   USUARIOS — PERMISOS
+   ============================================ */
+.permisos-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.permiso-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--beige-claro);
+  border-radius: var(--radio-sm);
+  border: 1px solid var(--beige-borde);
+}
+
+.permiso-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--texto-oscuro);
+}
+
+.permiso-select {
+  width: auto !important;
+  min-width: 140px;
+  margin: 0 !important;
+  font-size: 0.85rem;
+  padding: 6px 10px;
+}
