@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compras</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <nav class="navbar">
+    <span class="navbar-logo">✨ POS</span>
+    <div class="navbar-nav">
+      <a href="dashboard.html">📊 Dashboard</a>
+      <a href="index.html">🛒 Ventas</a>
+      <a href="pendientes.html">💳 Cartera</a>
+      <a href="inventario.html">📦 Inventario</a>
+      <a href="compras.html" class="activo">🛍 Compras</a>
+      <a href="caja.html">💰 Caja</a>
+    </div>
+    <div class="navbar-acciones">
+      <span class="navbar-usuario" id="usuarioInfo"></span>
+      <button class="btn-peligro btn-salir" onclick="cerrarSesion()">🚪 Salir</button>
+    </div>
+  </nav>
+
+  <div class="contenedor">
+
+    <h1 class="page-titulo">🛍 Registro de Compras</h1>
+
+    <!-- PASO 1: Descargar plantilla y subir CSV -->
+    <div class="card">
+      <p class="card-titulo">📥 Paso 1 — Cargar CSV del lote</p>
+      <p class="texto-ayuda">Descarga la plantilla, complétala con los productos del lote y súbela. El sistema calculará automáticamente el % de ganancia y actualizará el inventario.</p>
+
+      <div class="form-grupo" style="max-width:320px;">
+        <label for="nombreLote">Nombre del lote</label>
+        <input type="text" id="nombreLote" placeholder="Ej: Lote junio 2026">
+      </div>
+
+      <div class="acciones-producto">
+        <button class="btn-outline" id="btnDescargarPlantilla">⬇ Descargar plantilla CSV</button>
+        <label class="btn-secundario btn-upload" for="archivoCSV">📂 Subir CSV</label>
+        <input type="file" id="archivoCSV" accept=".csv" hidden>
+      </div>
+    </div>
+
+    <!-- PASO 2: Preview antes de confirmar -->
+    <div class="card" id="previewCard" hidden>
+      <p class="card-titulo">👁 Paso 2 — Revisar antes de confirmar</p>
+
+      <!-- Resumen del lote -->
+      <div class="cards-grid" id="resumenLote">
+        <div class="card-stat">
+          <span class="stat-label">Productos</span>
+          <span class="stat-valor" id="resumenProductos">—</span>
+        </div>
+        <div class="card-stat">
+          <span class="stat-label">Total mayorista</span>
+          <span class="stat-valor" id="resumenMayorista">—</span>
+        </div>
+        <div class="card-stat">
+          <span class="stat-label">Total venta esperada</span>
+          <span class="stat-valor" id="resumenVenta">—</span>
+        </div>
+        <div class="card-stat">
+          <span class="stat-label">Ganancia esperada</span>
+          <span class="stat-valor" id="resumenGanancia">—</span>
+        </div>
+      </div>
+
+      <!-- Tabla preview -->
+      <div class="tabla-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Producto</th>
+              <th>Cant.</th>
+              <th>Costo unit.</th>
+              <th>Precio venta</th>
+              <th>% Ganancia</th>
+              <th>Valor mayorista</th>
+              <th>Ganancia esperada</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tablaPreview"></tbody>
+        </table>
+      </div>
+
+      <div class="modal-footer" style="margin-top:16px;">
+        <button class="btn-outline" id="btnCancelarImport">✕ Cancelar</button>
+        <button class="btn-primario" id="btnConfirmarImport">✔ Confirmar e importar lote</button>
+      </div>
+    </div>
+
+    <!-- Historial de lotes -->
+    <div class="card">
+      <p class="card-titulo">📋 Historial de lotes</p>
+
+      <div class="barra-filtros">
+        <input type="text" id="buscarLote" placeholder="🔍 Buscar lote o producto...">
+        <input type="date" id="filtroFecha">
+        <button class="btn-outline" id="btnLimpiarFiltros">Limpiar</button>
+      </div>
+
+      <div class="tabla-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Lote</th>
+              <th>Código</th>
+              <th>Producto</th>
+              <th>Cant.</th>
+              <th>Costo unit.</th>
+              <th>Precio venta</th>
+              <th>% Ganancia</th>
+              <th>Valor mayorista</th>
+              <th>Ganancia esperada</th>
+            </tr>
+          </thead>
+          <tbody id="tablaHistorial">
+            <tr><td colspan="10" class="texto-vacio">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/compras.js"></script>
+
+</body>
+</html>
