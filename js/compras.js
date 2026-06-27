@@ -221,52 +221,47 @@ document.getElementById("btnConfirmarImport").addEventListener("click", async ()
 
       if (errCompra) { errores++; continue; }
 
-      // 2. Verificar si existe en inventario
-      const { data: prodExistente } = await sb
-        .from("inventario")
-        .select("codigo, stock_inicial, stock_salida, stock_final")
-        .eq("codigo", fila.codigo)
-        .single();
+      const esHistorico = document.getElementById("esHistorico").checked;
 
-      if (prodExistente) {
-        // Existe → sumar stock
-        const nuevoInicial = (prodExistente.stock_inicial || 0) + fila.cantidad;
-        const nuevoFinal   = Math.max(nuevoInicial - (prodExistente.stock_salida || 0), 0);
+// 2. Solo tocar inventario si NO es histórico
+if (!esHistorico) {
+  const { data: prodExistente } = await sb
+    .from("inventario")
+    .select("codigo, stock_inicial, stock_salida, stock_final")
+    .eq("codigo", fila.codigo)
+    .single();
 
-        const { error: errInv } = await sb
-          .from("inventario")
-          .update({
-            stock_inicial:   nuevoInicial,
-            stock_final:     nuevoFinal,
-            precio_unitario: fila.precio_venta,
-            ...(fila.imagenes ? { imagenes: fila.imagenes } : {})
-          })
-          .eq("codigo", fila.codigo);
+  if (prodExistente) {
+    const nuevoInicial = (prodExistente.stock_inicial || 0) + fila.cantidad;
+    const nuevoFinal   = Math.max(nuevoInicial - (prodExistente.stock_salida || 0), 0);
 
-        if (errInv) { errores++; continue; }
-        actualizados++;
+    await sb.from("inventario").update({
+      stock_inicial:   nuevoInicial,
+      stock_final:     nuevoFinal,
+      precio_unitario: fila.precio_venta,
+      ...(fila.imagenes ? { imagenes: fila.imagenes } : {})
+    }).eq("codigo", fila.codigo);
 
-      } else {
-        // No existe → crear producto nuevo
-        const { error: errNuevo } = await sb.from("inventario").insert([{
-          codigo:          fila.codigo,
-          producto:        fila.producto,
-          categoria:       fila.categoria,
-          publico:         fila.publico,
-          stock_inicial:   fila.cantidad,
-          stock_salida:    0,
-          stock_final:     fila.cantidad,
-          precio_unitario: fila.precio_venta,
-          imagenes:        fila.imagenes || null,
-          fecha:           new Date().toISOString()
-        }]);
-
-        if (errNuevo) { errores++; continue; }
-        insertados++;
-      }
-
-      totalCapital += fila.valor_total;
-    }
+    actualizados++;
+  } else {
+    await sb.from("inventario").insert([{
+      codigo:          fila.codigo,
+      producto:        fila.producto,
+      categoria:       fila.categoria,
+      publico:         fila.publico,
+      stock_inicial:   fila.cantidad,
+      stock_salida:    0,
+      stock_final:     fila.cantidad,
+      precio_unitario: fila.precio_venta,
+      imagenes:        fila.imagenes || null,
+      fecha:           new Date().toISOString()
+    }]);
+    insertados++;
+  }
+} else {
+  // Histórico — contar como "registrado" sin tocar inventario
+  insertados++;
+}
 
     // 3. Registrar salida de capital en caja
     if (totalCapital > 0) {
@@ -350,6 +345,8 @@ function renderHistorial(datos) {
     </tr>
   `).join("");
 }
+
+document.getElementById("esHistorico").checked = false;
 
 /* ============================================
    FILTROS HISTORIAL
