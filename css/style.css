@@ -999,3 +999,18 @@ tbody td {
     grid-template-columns: 1fr;
   }
 }
+/* ============================================
+   ANÁLISIS DE MERCADO
+   ============================================ */
+.alerta-stock {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: var(--radio-sm);
+  margin-bottom: 6px;
+  font-size: 0.88rem;
+}
+
+.alerta-roja    { background: #FDE8E8; border-left: 3px solid var(--error); }
+.alerta-naranja { background: var(--dorado-suave); border-left: 3px solid var(--dorado); }
