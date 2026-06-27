@@ -4,120 +4,190 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard</title>
+  <link rel="icon" href="data:,">
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    .seccion-titulo {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--texto-oscuro);
+      margin: 28px 0 12px;
+      padding-left: 10px;
+      border-left: 3px solid var(--dorado);
+    }
+    .crm-tabla td, .crm-tabla th { padding: 9px 12px; font-size:0.88rem; }
+    .top-producto { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--beige-borde); }
+    .top-producto:last-child { border-bottom:none; }
+    .top-num { font-size:1.3rem; font-weight:800; color:var(--dorado); min-width:28px; }
+    .top-info { flex:1; }
+    .top-info strong { display:block; font-size:0.92rem; }
+    .top-info span { font-size:0.8rem; color:var(--texto-claro); }
+    .top-monto { font-weight:700; color:var(--exito); font-size:0.92rem; }
+    .alerta-stock { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-radius:var(--radio-sm); margin-bottom:6px; font-size:0.88rem; }
+    .alerta-roja { background:#FDE8E8; border-left:3px solid var(--error); }
+    .alerta-naranja { background:var(--dorado-suave); border-left:3px solid var(--dorado); }
+    .bolsa-mini { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-radius:var(--radio-sm); margin-bottom:8px; font-size:0.9rem; }
+    .bolsa-caja     { background:#FFF8E8; border-left:3px solid var(--dorado); }
+    .bolsa-capital  { background:#EBF5FB; border-left:3px solid #3498DB; }
+    .bolsa-ganancia { background:#E8F8EF; border-left:3px solid var(--exito); }
+    .bolsa-socia    { background:var(--rosa-suave); border-left:3px solid var(--rosa); }
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    @media(max-width:640px){ .grid-2 { grid-template-columns:1fr; } }
+  </style>
 </head>
-
 <body>
 
   <nav class="navbar">
     <span class="navbar-logo">✨ POS Admin</span>
     <div class="navbar-nav">
+      <a href="dashboard.html" class="activo">📊 Dashboard</a>
       <a href="index.html">🛒 Ventas</a>
       <a href="pendientes.html">💳 Cartera</a>
       <a href="inventario.html">📦 Inventario</a>
-<a href="compras.html">🛍 Compras</a>
-<a href="caja.html">💰 Caja</a>
-
-
+      <a href="compras.html">🛍 Compras</a>
+      <a href="caja.html">💰 Caja</a>
     </div>
-    <span class="navbar-usuario" id="usuarioInfo"></span>
+    <div class="navbar-acciones">
+      <span class="navbar-usuario" id="usuarioInfo"></span>
+      <button class="btn-peligro btn-salir" onclick="cerrarSesion()">🚪 Salir</button>
+    </div>
   </nav>
-
-<button class="btn-peligro btn-salir" onclick="cerrarSesion()">
-  🚪 Salir
-</button>
 
   <div class="contenedor">
 
-    <h1 class="page-titulo">Dashboard Administrativo</h1>
+    <h1 class="page-titulo">📊 Dashboard</h1>
 
-    <!-- Cards resumen -->
-    <div class="cards-grid" id="resumen">
+    <!-- ── VENTAS ── -->
+    <p class="seccion-titulo">💳 Resumen de ventas</p>
+    <div class="cards-grid">
       <div class="card-stat">
-        <span class="stat-label">Total Ventas</span>
+        <span class="stat-label">Total facturado</span>
         <span class="stat-valor" id="totalVentas">—</span>
+        <span class="stat-sub">todas las ventas</span>
       </div>
       <div class="card-stat">
-        <span class="stat-label">Cartera Pendiente</span>
-        <span class="stat-valor" id="totalCartera">—</span>
-      </div>
-      <div class="card-stat">
-        <span class="stat-label">Ventas con Saldo</span>
-        <span class="stat-valor" id="ventasPendientes">—</span>
-      </div>
-      <div class="card-stat">
-        <span class="stat-label">Total Cobrado</span>
+        <span class="stat-label">Total cobrado</span>
         <span class="stat-valor" id="totalCobrado">—</span>
+        <span class="stat-sub">pagos recibidos</span>
+      </div>
+      <div class="card-stat">
+        <span class="stat-label">Cartera pendiente</span>
+        <span class="stat-valor" id="totalCartera">—</span>
+        <span class="stat-sub">por cobrar</span>
+      </div>
+      <div class="card-stat">
+        <span class="stat-label">Ventas con saldo</span>
+        <span class="stat-valor" id="ventasPendientes">—</span>
+        <span class="stat-sub">clientes deben</span>
+      </div>
+      <div class="card-stat">
+        <span class="stat-label">Ventas hoy</span>
+        <span class="stat-valor" id="ventasHoy">—</span>
+        <span class="stat-sub">transacciones</span>
+      </div>
+      <div class="card-stat">
+        <span class="stat-label">Cobrado hoy</span>
+        <span class="stat-valor" id="cobradoHoy">—</span>
+        <span class="stat-sub">ingresos del día</span>
       </div>
     </div>
 
-    <!-- Menú accesos rápidos -->
+    <!-- ── CAJA ── -->
+    <p class="seccion-titulo">💰 Estado de caja</p>
+    <div class="grid-2">
+      <div class="card">
+        <p class="card-titulo">Bolsas</p>
+        <div class="bolsa-mini bolsa-caja">
+          <span>💵 Caja disponible</span>
+          <strong id="cajaCaja">—</strong>
+        </div>
+        <div class="bolsa-mini bolsa-capital">
+          <span>🔄 Capital invertido</span>
+          <strong id="cajaCapital">—</strong>
+        </div>
+        <div class="bolsa-mini bolsa-ganancia">
+          <span>💸 Ganancias totales</span>
+          <strong id="cajaGanancias">—</strong>
+        </div>
+        <div class="bolsa-mini bolsa-socia">
+          <span>👩 Paola</span>
+          <strong id="cajaPaola">—</strong>
+        </div>
+        <div class="bolsa-mini bolsa-socia">
+          <span>👩 Juliette</span>
+          <strong id="cajaJuliette">—</strong>
+        </div>
+      </div>
+      <div class="card">
+        <p class="card-titulo">📋 Últimos movimientos</p>
+        <div id="ultimosMovimientos"><p class="texto-vacio">Cargando...</p></div>
+      </div>
+    </div>
+
+    <!-- ── INVENTARIO ── -->
+    <p class="seccion-titulo">📦 Inventario</p>
+    <div class="grid-2">
+      <div class="card">
+        <p class="card-titulo">⚠ Alertas de stock</p>
+        <div id="alertasStock"><p class="texto-vacio">Cargando...</p></div>
+      </div>
+      <div class="card">
+        <p class="card-titulo">🏆 Productos más vendidos</p>
+        <div id="topProductos"><p class="texto-vacio">Cargando...</p></div>
+      </div>
+    </div>
+
+    <!-- ── CRM ── -->
+    <p class="seccion-titulo">👥 CRM — Clientes</p>
+    <div class="grid-2">
+      <div class="card">
+        <p class="card-titulo">🔴 Con saldo pendiente</p>
+        <div class="tabla-wrapper">
+          <table class="crm-tabla">
+            <thead><tr><th>Cliente</th><th>Saldo</th><th>Ventas</th><th></th></tr></thead>
+            <tbody id="crmPendientes"><tr><td colspan="4" class="texto-vacio">Cargando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <p class="card-titulo">⭐ Mejores clientes</p>
+        <div class="tabla-wrapper">
+          <table class="crm-tabla">
+            <thead><tr><th>Cliente</th><th>Total comprado</th><th>Ventas</th></tr></thead>
+            <tbody id="crmTop"><tr><td colspan="3" class="texto-vacio">Cargando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ventas recientes -->
+    <p class="seccion-titulo">🧾 Ventas recientes</p>
     <div class="card">
-      <p class="card-titulo">Accesos rápidos</p>
-      <div style="display:flex; gap:12px; flex-wrap:wrap;">
-        <button class="btn-primario" style="width:auto;" onclick="window.location.href='index.html'">🛒 Punto de Venta</button>
-        <button class="btn-secundario" onclick="window.location.href='pendientes.html'">💳 Cartera / Abonos</button>
-        <button class="btn-outline" onclick="window.location.href='inventario.html'">📦 Inventario</button>
+      <div class="tabla-wrapper">
+        <table class="crm-tabla">
+          <thead>
+            <tr><th>#</th><th>Cliente</th><th>Vendedor</th><th>Total</th><th>Cobrado</th><th>Saldo</th><th>Estado</th></tr>
+          </thead>
+          <tbody id="ventasRecientes"><tr><td colspan="7" class="texto-vacio">Cargando...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Accesos rápidos -->
+    <div class="card" style="margin-top:8px;">
+      <p class="card-titulo">⚡ Accesos rápidos</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn-primario"   style="width:auto;" onclick="location.href='index.html'">🛒 Punto de Venta</button>
+        <button class="btn-secundario" style="width:auto;" onclick="location.href='pendientes.html'">💳 Cartera</button>
+        <button class="btn-outline"    style="width:auto;" onclick="location.href='inventario.html'">📦 Inventario</button>
+        <button class="btn-outline"    style="width:auto;" onclick="location.href='compras.html'">🛍 Compras</button>
+        <button class="btn-outline"    style="width:auto;" onclick="location.href='caja.html'">💰 Caja</button>
       </div>
     </div>
 
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script>
-    const { createClient } = supabase;
-    const sb = createClient(
-      "https://jzuxaxlnguvsvlmymkge.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dXhheGxuZ3V2c3ZsbXlta2dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNTI2NjIsImV4cCI6MjA5NzgyODY2Mn0.DatIvM5O6mFz0qhR8tRreB0TCyB8pBMj5FBo0GmMEQo"
-    );
-
-    // Validar sesión
-    const usuario = JSON.parse(localStorage.getItem("usuario"));
-    if (!usuario) {
-      window.location.href = "login.html";
-    }
-
-    if (usuario.rol !== "Administrador") {
-      window.location.href = "index.html";
-    }
-
-    document.getElementById("usuarioInfo").textContent =
-      `👤 ${usuario.nombre} (${usuario.rol})`;
-
-    // Formatear moneda
-    function fmt(n) {
-      return "$" + Number(n || 0).toLocaleString("es-CO");
-    }
-
-    async function cargarResumen() {
-      const { data: ventas, error } = await sb
-        .from("ventas")
-        .select("total_general, total_pagado, saldo");
-
-      if (error || !ventas) return;
-
-      let totalVentas   = 0;
-      let totalCartera  = 0;
-      let totalCobrado  = 0;
-      let pendientes    = 0;
-
-      ventas.forEach(v => {
-        totalVentas  += Number(v.total_general || 0);
-        totalCobrado += Number(v.total_pagado  || 0);
-        if (v.saldo > 0) {
-          totalCartera += Number(v.saldo || 0);
-          pendientes++;
-        }
-      });
-
-      document.getElementById("totalVentas").textContent      = fmt(totalVentas);
-      document.getElementById("totalCartera").textContent     = fmt(totalCartera);
-      document.getElementById("totalCobrado").textContent     = fmt(totalCobrado);
-      document.getElementById("ventasPendientes").textContent = pendientes;
-    }
-
-    cargarResumen();
-  </script>
-
+  <script src="js/dashboard.js"></script>
 </body>
-</html> 
+</html>
