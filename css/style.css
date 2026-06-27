@@ -286,6 +286,12 @@ button:active:not(:disabled) {
   color: var(--texto-claro);
 }
 
+.navbar-acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 /* ============================================
    LAYOUT PRINCIPAL
    ============================================ */
@@ -313,6 +319,7 @@ button:active:not(:disabled) {
   box-shadow: var(--sombra-leve);
   padding: 24px;
   border: 1px solid var(--beige-borde);
+  margin-bottom: 20px;
 }
 
 .card-titulo {
@@ -324,7 +331,6 @@ button:active:not(:disabled) {
   border-bottom: 1.5px solid var(--beige-borde);
 }
 
-/* Grid de cards dashboard */
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -414,7 +420,9 @@ tbody td {
   vertical-align: middle;
 }
 
-/* Badges de estado */
+/* ============================================
+   BADGES
+   ============================================ */
 .badge {
   display: inline-block;
   padding: 3px 10px;
@@ -423,20 +431,9 @@ tbody td {
   font-weight: 600;
 }
 
-.badge-pendiente {
-  background: var(--rosa-suave);
-  color: #B85070;
-}
-
-.badge-pagado {
-  background: #E8F8EF;
-  color: #1E8449;
-}
-
-.badge-parcial {
-  background: var(--dorado-suave);
-  color: var(--dorado-hover);
-}
+.badge-pendiente { background: var(--rosa-suave); color: #B85070; }
+.badge-pagado    { background: #E8F8EF; color: #1E8449; }
+.badge-parcial   { background: var(--dorado-suave); color: var(--dorado-hover); }
 
 /* ============================================
    MODALES
@@ -448,9 +445,13 @@ tbody td {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 200;
+  z-index: 9999 !important;
   padding: 16px;
   backdrop-filter: blur(2px);
+}
+
+.modal-overlay[hidden] {
+  display: none !important;
 }
 
 .modal {
@@ -482,7 +483,7 @@ tbody td {
 }
 
 /* ============================================
-   FORMULARIOS EN SECCIÓN
+   FORMULARIOS
    ============================================ */
 .form-grid {
   display: grid;
@@ -500,7 +501,7 @@ tbody td {
 }
 
 /* ============================================
-   BARRA DE BÚSQUEDA / FILTROS
+   FILTROS
    ============================================ */
 .barra-filtros {
   display: flex;
@@ -518,78 +519,16 @@ tbody td {
 }
 
 /* ============================================
-   STOCK — colores especiales
+   STOCK
    ============================================ */
-.stock-bajo {
-  color: var(--error);
-  font-weight: 700;
-}
-
-.stock-medio {
-  color: #E67E22;
-  font-weight: 600;
-}
-
-.stock-ok {
-  color: var(--exito);
-  font-weight: 600;
-}
+.stock-bajo  { color: var(--error);   font-weight: 700; }
+.stock-medio { color: #E67E22;        font-weight: 600; }
+.stock-ok    { color: var(--exito);   font-weight: 600; }
 
 /* ============================================
-   RESPONSIVE
+   POS — PRODUCTO
    ============================================ */
-@media (max-width: 640px) {
-  .navbar {
-    padding: 10px 14px;
-    flex-wrap: wrap;
-  }
-
-  .navbar-nav a {
-    font-size: 0.82rem;
-    padding: 5px 10px;
-  }
-
-  .contenedor {
-    padding: 16px 10px;
-  }
-
-  .card {
-    padding: 16px;
-  }
-
-  .modal {
-    padding: 24px 18px;
-  }
-
-  .modal-footer {
-    flex-direction: column;
-  }
-
-  .modal-footer button {
-    width: 100%;
-  }
-
-  thead th,
-  tbody td {
-    padding: 9px 10px;
-    font-size: 0.82rem;
-  }
-
-  .page-titulo {
-    font-size: 1.15rem;
-  }
-
-  .card-stat .stat-valor {
-    font-size: 1.4rem;
-  }
-}
-
-/* ============================================
-   POS — DETALLE PRODUCTO
-   ============================================ */
-.detalle-producto {
-  margin-top: 16px;
-}
+.detalle-producto { margin-top: 16px; }
 
 .producto-detalle {
   display: flex;
@@ -648,6 +587,7 @@ tbody td {
   gap: 10px;
   margin-top: 14px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 /* ============================================
@@ -677,6 +617,8 @@ tbody td {
   padding: 4px 10px;
   font-size: 0.85rem;
   border-radius: var(--radio-sm);
+  width: auto !important;
+  margin-top: 0 !important;
 }
 
 /* ============================================
@@ -708,49 +650,190 @@ tbody td {
 }
 
 /* ============================================
-   NAVBAR — ACCIONES
+   IMÁGENES EN TABLA
    ============================================ */
-.navbar-acciones {
+.tabla-img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: var(--radio-sm);
+  border: 1px solid var(--beige-borde);
+}
+
+.tabla-img-placeholder {
+  width: 48px;
+  height: 48px;
+  background: var(--beige-medio);
+  border-radius: var(--radio-sm);
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  color: var(--texto-claro);
+  font-size: 0.75rem;
+}
+
+.preview-imagen { margin-top: 12px; }
+
+.preview-img {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: var(--radio-sm);
+  border: 1px solid var(--beige-borde);
 }
 
 /* ============================================
-   SCROLL PERSONALIZADO
+   TAGS Y UTILIDADES
    ============================================ */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
+.codigo-tag {
+  font-family: monospace;
+  font-size: 0.8rem;
   background: var(--beige-medio);
+  color: var(--texto-medio);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--beige-borde);
+  white-space: nowrap;
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--beige-borde);
-  border-radius: 10px;
+.texto-ayuda {
+  font-size: 0.85rem;
+  color: var(--texto-claro);
+  margin-bottom: 14px;
+  line-height: 1.5;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--dorado);
+.btn-upload {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: var(--radio-sm);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 /* ============================================
-   FIX MODAL + NAVBAR MÓVIL
+   COMPRAS — PREVIEW Y PORCENTAJES
    ============================================ */
-
-/* Forzar modal siempre encima del navbar */
-.modal-overlay {
-  z-index: 9999 !important;
+.lote-badge {
+  display: inline-block;
+  background: var(--dorado-suave);
+  color: var(--dorado-hover);
+  border: 1px solid var(--beige-borde);
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
-.modal-overlay[hidden] {
-  display: none !important;
+.pct-alto  { color: var(--exito); font-weight: 700; }
+.pct-medio { color: #E67E22;      font-weight: 600; }
+.pct-bajo  { color: var(--error); font-weight: 600; }
+
+/* ============================================
+   CAJA — BOLSAS DE DINERO
+   ============================================ */
+.bolsas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
-/* Fix botón salir — era aplastado por flex del navbar */
+.bolsa-card {
+  background: var(--blanco);
+  border-radius: var(--radio);
+  padding: 20px 24px;
+  border: 1px solid var(--beige-borde);
+  box-shadow: var(--sombra-leve);
+  border-top: 4px solid var(--dorado);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bolsa-card.bolsa-capital  { border-top-color: #3498DB; }
+.bolsa-card.bolsa-ganancia { border-top-color: var(--exito); }
+.bolsa-card.bolsa-gasto    { border-top-color: var(--error); }
+
+.bolsa-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--texto-claro);
+}
+
+.bolsa-valor {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--texto-oscuro);
+}
+
+.bolsa-sub {
+  font-size: 0.8rem;
+  color: var(--texto-medio);
+}
+
+/* ============================================
+   CAJA — SOCIAS
+   ============================================ */
+.socias-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.socia-card {
+  background: var(--rosa-suave);
+  border: 1px solid var(--rosa);
+  border-radius: var(--radio-sm);
+  padding: 14px 16px;
+  text-align: center;
+}
+
+.socia-nombre {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--texto-oscuro);
+  margin-bottom: 4px;
+}
+
+.socia-valor {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #B85070;
+}
+
+/* ============================================
+   CAJA — MOVIMIENTOS
+   ============================================ */
+.tipo-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.tipo-ingreso  { background: #E8F8EF;           color: #1E8449; }
+.tipo-capital  { background: #EBF5FB;           color: #1A5276; }
+.tipo-ganancia { background: var(--rosa-suave); color: #B85070; }
+.tipo-gasto    { background: #FDE8E8;           color: var(--error); }
+
+.movimiento-ingreso  { color: var(--exito); font-weight: 700; }
+.movimiento-capital  { color: #3498DB;      font-weight: 700; }
+.movimiento-ganancia { color: #B85070;      font-weight: 700; }
+.movimiento-gasto    { color: var(--error); font-weight: 700; }
+
+/* ============================================
+   BOTÓN SALIR
+   ============================================ */
 .btn-salir {
   width: auto !important;
   margin-top: 0 !important;
@@ -759,14 +842,56 @@ tbody td {
   flex-shrink: 0;
 }
 
-/* Navbar en móvil no colapsa el botón salir */
+/* ============================================
+   RESPONSIVE
+   ============================================ */
 @media (max-width: 640px) {
   .navbar {
+    padding: 10px 14px;
+    flex-wrap: wrap;
     gap: 8px;
+  }
+
+  .navbar-nav a {
+    font-size: 0.82rem;
+    padding: 5px 10px;
   }
 
   .navbar-acciones {
     width: 100%;
     justify-content: space-between;
   }
+
+  .contenedor { padding: 16px 10px; }
+  .card       { padding: 16px; }
+
+  .modal { padding: 24px 18px; }
+
+  .modal-footer {
+    flex-direction: column;
+  }
+
+  .modal-footer button { width: 100%; }
+
+  thead th,
+  tbody td {
+    padding: 9px 10px;
+    font-size: 0.82rem;
+  }
+
+  .page-titulo { font-size: 1.15rem; }
+
+  .card-stat .stat-valor { font-size: 1.4rem; }
+
+  .socias-grid { grid-template-columns: 1fr; }
+
+  .bolsas-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ============================================
+   SCROLL PERSONALIZADO
+   ============================================ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: var(--beige-medio); }
+::-webkit-scrollbar-thumb  { background: var(--beige-borde); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--dorado); }
