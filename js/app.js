@@ -63,9 +63,18 @@ async function cargarInventario() {
    CATEGORÍAS
    ============================================ */
 function cargarCategorias() {
-  const categorias = [...new Set(inventario.map(x => x.categoria?.trim()).filter(Boolean))];
+  const categorias = [...new Set(
+    inventario.map(x => (x.categoria || "").trim()).filter(Boolean)
+  )].sort();
+
   const combo = document.getElementById("categoria");
   combo.innerHTML = '<option value="">Seleccione categoría</option>';
+  
+  if (categorias.length === 0) {
+    combo.innerHTML += `<option disabled>Sin categorías disponibles</option>`;
+    return;
+  }
+
   categorias.forEach(cat => {
     combo.innerHTML += `<option value="${cat}">${cat}</option>`;
   });
