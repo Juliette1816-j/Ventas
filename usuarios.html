@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Usuarios</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <nav class="navbar">
+    <span class="navbar-logo">✨ POS</span>
+    <div class="navbar-nav">
+      <a href="dashboard.html">📊 Dashboard</a>
+      <a href="index.html">🛒 Ventas</a>
+      <a href="pendientes.html">💳 Cartera</a>
+      <a href="inventario.html">📦 Inventario</a>
+      <a href="compras.html">🛍 Compras</a>
+      <a href="caja.html">💰 Caja</a>
+      <a href="usuarios.html" class="activo">👥 Usuarios</a>
+    </div>
+    <div class="navbar-acciones">
+      <span class="navbar-usuario" id="usuarioInfo"></span>
+      <button class="btn-peligro btn-salir" onclick="cerrarSesion()">🚪 Salir</button>
+    </div>
+  </nav>
+
+  <div class="contenedor">
+
+    <h1 class="page-titulo">👥 Gestión de Usuarios</h1>
+
+    <!-- Crear usuario -->
+    <div class="card">
+      <p class="card-titulo">➕ Crear nuevo usuario</p>
+
+      <div class="form-grid">
+        <div class="form-grupo">
+          <label for="nuevoNombre">Nombre completo</label>
+          <input type="text" id="nuevoNombre" placeholder="Ej: María García">
+        </div>
+        <div class="form-grupo">
+          <label for="nuevoUsername">Usuario</label>
+          <input type="text" id="nuevoUsername" placeholder="Ej: maria.garcia">
+        </div>
+        <div class="form-grupo">
+          <label for="nuevoPassword">Contraseña</label>
+          <input type="password" id="nuevoPassword" placeholder="Mínimo 6 caracteres">
+        </div>
+        <div class="form-grupo">
+          <label for="nuevoRol">Rol</label>
+          <select id="nuevoRol">
+            <option value="Vendedor">Vendedor</option>
+            <option value="Supervisor">Supervisor</option>
+            <option value="Admin">Admin</option>
+            <option value="SuperAdmin">SuperAdmin</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Permisos por módulo -->
+      <div style="margin-top:16px;">
+        <p class="card-titulo" style="margin-bottom:12px;">Permisos por módulo</p>
+        <div class="permisos-grid" id="permisosNuevo"></div>
+      </div>
+
+      <p id="crearError" class="msg-error" hidden></p>
+
+      <div class="acciones-producto">
+        <button class="btn-primario" id="btnCrearUsuario">✔ Crear usuario</button>
+      </div>
+    </div>
+
+    <!-- Lista de usuarios -->
+    <div class="card">
+      <p class="card-titulo">👤 Usuarios registrados</p>
+      <div class="tabla-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Usuario</th>
+              <th>Rol</th>
+              <th>Ventas</th>
+              <th>Inventario</th>
+              <th>Cartera</th>
+              <th>Compras</th>
+              <th>Caja</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaUsuarios">
+            <tr><td colspan="9" class="texto-vacio">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL EDITAR USUARIO -->
+  <div class="modal-overlay" id="modalEditar" hidden>
+    <div class="modal">
+      <p class="modal-titulo">✏️ Editar usuario</p>
+
+      <input type="hidden" id="editId">
+
+      <div class="form-grid">
+        <div class="form-grupo">
+          <label>Nombre</label>
+          <input type="text" id="editNombre">
+        </div>
+        <div class="form-grupo">
+          <label>Usuario</label>
+          <input type="text" id="editUsername">
+        </div>
+        <div class="form-grupo">
+          <label>Nueva contraseña</label>
+          <input type="password" id="editPassword" placeholder="Dejar vacío para no cambiar">
+        </div>
+        <div class="form-grupo">
+          <label>Rol</label>
+          <select id="editRol">
+            <option value="Vendedor">Vendedor</option>
+            <option value="Supervisor">Supervisor</option>
+            <option value="Admin">Admin</option>
+            <option value="SuperAdmin">SuperAdmin</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;">
+        <p class="card-titulo" style="margin-bottom:12px;">Permisos por módulo</p>
+        <div class="permisos-grid" id="permisosEditar"></div>
+      </div>
+
+      <p id="editError" class="msg-error" hidden></p>
+
+      <div class="modal-footer">
+        <button class="btn-outline" onclick="cerrarModal()">Cancelar</button>
+        <button class="btn-primario" id="btnGuardarEdicion">Guardar cambios</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CONFIRMAR ELIMINAR -->
+  <div class="modal-overlay" id="modalEliminar" hidden>
+    <div class="modal">
+      <p class="modal-titulo">🗑 Eliminar usuario</p>
+      <p style="color:var(--texto-medio); margin-bottom:16px;">
+        ¿Estás segura de que quieres eliminar a <strong id="eliminarNombre"></strong>? Esta acción no se puede deshacer.
+      </p>
+      <input type="hidden" id="eliminarId">
+      <div class="modal-footer">
+        <button class="btn-outline" onclick="cerrarModal()">Cancelar</button>
+        <button class="btn-peligro" id="btnConfirmarEliminar">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/usuarios.js"></script>
+
+</body>
+</html>
