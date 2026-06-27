@@ -1,5 +1,6 @@
 /* ============================================
    CAJA.JS — Movimientos y bolsas
+   Lee pagos automáticamente desde tabla pagos
    Sin módulos ES · Supabase UMD
    ============================================ */
 
@@ -24,6 +25,7 @@ window.cerrarSesion = function () {
 
 /* --- Estado --- */
 let movimientosData = [];
+let totalCobradoPagos = 0; // suma de tabla pagos
 
 /* ============================================
    FORMATO
@@ -40,9 +42,6 @@ function fmtFecha(f) {
   });
 }
 
-/* ============================================
-   TIPO → badge color
-   ============================================ */
 function tipoBadge(tipo) {
   const map = {
     ingreso:  { cls: "badge-pagado",    label: "💵 Ingreso"  },
@@ -56,69 +55,89 @@ function tipoBadge(tipo) {
 
 /* ============================================
    CALCULAR BOLSAS
+   Ingresos = tabla pagos (automático) + ingresos manuales en caja
    ============================================ */
-function calcularBolsas(datos) {
-  let caja      = 0;
-  let capital   = 0;
-  let ganancias = 0;
-  let socia1    = 0;
-  let socia2    = 0;
+function calcularBolsas(movimientos, totalPagos) {
+  let ingresosManuales = 0;
+  let capital          = 0;
+  let ganancias        = 0;
+  let socia1           = 0;
+  let socia2           = 0;
+  let egresos          = 0;
 
-  datos.forEach(m => {
-    const monto = Number(m.monto || 0);
+  movimientos.forEach(m => {
+    const v = Number(m.monto || 0);
     switch (m.tipo) {
       case "ingreso":
-        caja += monto;
+        ingresosManuales += v;
         break;
       case "capital":
-        caja    -= monto;
-        capital += monto;
+        capital  += v;
+        egresos  += v;
         break;
       case "ganancia":
-        caja      -= monto;
-        ganancias += monto;
-        if (m.socia === "Socia 1")  socia1 += monto;
-        else if (m.socia === "Socia 2") socia2 += monto;
+        ganancias += v;
+        egresos   += v;
+        if (m.socia === "Socia 1")      socia1 += v;
+        else if (m.socia === "Socia 2") socia2 += v;
         else if (m.socia === "Ambas") {
-          socia1 += monto / 2;
-          socia2 += monto / 2;
+          socia1 += v / 2;
+          socia2 += v / 2;
         }
         break;
       case "gasto":
-        caja -= monto;
+        egresos += v;
         break;
     }
   });
 
-  document.getElementById("saldoCaja").textContent     = fmt(caja);
-  document.getElementById("saldoCapital").textContent  = fmt(capital);
-  document.getElementById("saldoGanancias").textContent= fmt(ganancias);
-  document.getElementById("saldoSocia1").textContent   = fmt(socia1);
-  document.getElementById("saldoSocia2").textContent   = fmt(socia2);
+  const totalIngresos = totalPagos + ingresosManuales;
+  const caja          = totalIngresos - egresos;
 
-  // Color negativo en caja
-  document.getElementById("saldoCaja").style.color = caja < 0 ? "var(--error)" : "var(--dorado)";
+  document.getElementById("saldoCaja").textContent      = fmt(caja);
+  document.getElementById("saldoCapital").textContent   = fmt(capital);
+  document.getElementById("saldoGanancias").textContent = fmt(ganancias);
+  document.getElementById("saldoSocia1").textContent    = fmt(socia1);
+  document.getElementById("saldoSocia2").textContent    = fmt(socia2);
+
+  document.getElementById("saldoCaja").style.color =
+    caja < 0 ? "var(--error)" : "var(--dorado)";
 }
 
 /* ============================================
-   CARGAR MOVIMIENTOS
+   CARGAR PAGOS DESDE TABLA pagos
+   ============================================ */
+async function cargarTotalPagos() {
+  const { data, error } = await sb
+    .from("pagos")
+    .select("monto");
+
+  if (error || !data) return 0;
+  return data.reduce((a, p) => a + Number(p.monto || 0), 0);
+}
+
+/* ============================================
+   CARGAR TODO
    ============================================ */
 async function cargarMovimientos() {
   const tbody = document.getElementById("tablaMovimientos");
   tbody.innerHTML = `<tr><td colspan="8" class="texto-vacio">Cargando...</td></tr>`;
 
-  const { data, error } = await sb
-    .from("caja")
-    .select("*")
-    .order("fecha", { ascending: false });
+  // Cargar en paralelo
+  const [pagosTotal, { data, error }] = await Promise.all([
+    cargarTotalPagos(),
+    sb.from("caja").select("*").order("fecha", { ascending: false })
+  ]);
 
   if (error) {
     tbody.innerHTML = `<tr><td colspan="8" class="texto-vacio">Error: ${error.message}</td></tr>`;
     return;
   }
 
-  movimientosData = data || [];
-  calcularBolsas(movimientosData);
+  totalCobradoPagos = pagosTotal;
+  movimientosData   = data || [];
+
+  calcularBolsas(movimientosData, totalCobradoPagos);
   renderMovimientos(movimientosData);
 }
 
@@ -129,7 +148,7 @@ function renderMovimientos(datos) {
   const tbody = document.getElementById("tablaMovimientos");
 
   if (!datos || datos.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" class="texto-vacio">Sin movimientos</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="texto-vacio">Sin movimientos manuales registrados</td></tr>`;
     return;
   }
 
@@ -168,11 +187,11 @@ document.getElementById("btnRegistrarMovimiento").addEventListener("click", asyn
   const errorEl  = document.getElementById("movimientoError");
   errorEl.hidden = true;
 
-  const tipo      = document.getElementById("tipoMovimiento").value;
-  const monto     = parseFloat(document.getElementById("montoMovimiento").value);
-  const concepto  = document.getElementById("conceptoMovimiento").value.trim();
-  const referencia= document.getElementById("referenciaMovimiento").value.trim();
-  const socia     = tipo === "ganancia"
+  const tipo       = document.getElementById("tipoMovimiento").value;
+  const monto      = parseFloat(document.getElementById("montoMovimiento").value);
+  const concepto   = document.getElementById("conceptoMovimiento").value.trim();
+  const referencia = document.getElementById("referenciaMovimiento").value.trim();
+  const socia      = tipo === "ganancia"
     ? document.getElementById("sociaMovimiento").value
     : null;
 
@@ -181,43 +200,37 @@ document.getElementById("btnRegistrarMovimiento").addEventListener("click", asyn
     errorEl.hidden = false;
     return;
   }
-
   if (!concepto) {
     errorEl.textContent = "Ingresa un concepto.";
     errorEl.hidden = false;
     return;
   }
 
-  // Calcular saldo_caja actual
-  let saldoActual = 0;
+  // Calcular saldo_caja actual para guardarlo en el registro
+  let egresos = 0;
   movimientosData.forEach(m => {
-    const v = Number(m.monto || 0);
-    if (m.tipo === "ingreso") saldoActual += v;
-    else saldoActual -= v;
+    if (["capital","ganancia","gasto"].includes(m.tipo)) egresos += Number(m.monto || 0);
   });
-
-  const nuevoSaldo = tipo === "ingreso"
-    ? saldoActual + monto
-    : saldoActual - monto;
+  const cajaActual = totalCobradoPagos - egresos;
+  const nuevoSaldo = ["capital","ganancia","gasto"].includes(tipo)
+    ? cajaActual - monto
+    : cajaActual + monto;
 
   this.disabled    = true;
   this.textContent = "Guardando...";
 
   try {
-    // Si es ganancia para "Ambas", insertar dos registros
     if (tipo === "ganancia" && socia === "Ambas") {
       const mitad = monto / 2;
-
       for (const s of ["Socia 1", "Socia 2"]) {
-        const saldoParcial = s === "Socia 1" ? saldoActual - mitad : saldoActual - monto;
         const { error } = await sb.from("caja").insert([{
           tipo,
-          concepto: concepto + ` (${s})`,
-          monto:    mitad,
-          socia:    s,
+          concepto:   concepto + ` (${s})`,
+          monto:      mitad,
+          socia:      s,
           referencia: referencia || null,
-          saldo_caja: saldoParcial,
-          usuario:  usuario.username
+          saldo_caja: s === "Socia 1" ? cajaActual - mitad : cajaActual - monto,
+          usuario:    usuario.username
         }]);
         if (error) throw error;
       }
@@ -226,16 +239,15 @@ document.getElementById("btnRegistrarMovimiento").addEventListener("click", asyn
         tipo,
         concepto,
         monto,
-        socia:     socia || null,
+        socia:      socia || null,
         referencia: referencia || null,
         saldo_caja: nuevoSaldo,
-        usuario:   usuario.username
+        usuario:    usuario.username
       }]);
       if (error) throw error;
     }
 
-    // Limpiar form
-    document.getElementById("montoMovimiento").value    = "";
+    document.getElementById("montoMovimiento").value     = "";
     document.getElementById("conceptoMovimiento").value  = "";
     document.getElementById("referenciaMovimiento").value= "";
 
@@ -261,10 +273,10 @@ function aplicarFiltros() {
   const hasta = document.getElementById("filtroHasta").value;
 
   const filtrado = movimientosData.filter(m => {
-    const coincideTipo  = tipo  ? m.tipo === tipo : true;
     const fecha         = m.fecha ? m.fecha.slice(0, 10) : "";
-    const coincideDesde = desde ? fecha >= desde : true;
-    const coincideHasta = hasta ? fecha <= hasta : true;
+    const coincideTipo  = tipo  ? m.tipo === tipo  : true;
+    const coincideDesde = desde ? fecha  >= desde  : true;
+    const coincideHasta = hasta ? fecha  <= hasta  : true;
     return coincideTipo && coincideDesde && coincideHasta;
   });
 
@@ -286,8 +298,8 @@ document.getElementById("btnLimpiarFiltros").addEventListener("click", () => {
    ============================================ */
 function mostrarMensaje(texto, tipo) {
   const el = document.createElement("div");
-  el.className   = tipo === "exito" ? "msg-exito" : "msg-error";
-  el.textContent = texto;
+  el.className     = tipo === "exito" ? "msg-exito" : "msg-error";
+  el.textContent   = texto;
   el.style.cssText = "position:fixed;bottom:20px;right:20px;z-index:9999;max-width:320px;";
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 4000);
