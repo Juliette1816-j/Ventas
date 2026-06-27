@@ -55,7 +55,7 @@ async function cargarInventario() {
     return;
   }
 
-  inventario = data;
+  inventario = data || [];
   cargarCategorias();
 }
 
