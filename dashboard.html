@@ -6,7 +6,6 @@
   <title>Dashboard</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="css/style.css">
-  
 </head>
 <body>
 
@@ -19,6 +18,7 @@
       <a href="inventario.html">📦 Inventario</a>
       <a href="compras.html">🛍 Compras</a>
       <a href="caja.html">💰 Caja</a>
+      <a href="analisis.html">📈 Análisis</a>
     </div>
     <div class="navbar-acciones">
       <span class="navbar-usuario" id="usuarioInfo"></span>
@@ -30,7 +30,7 @@
 
     <h1 class="page-titulo">📊 Dashboard</h1>
 
-    <!-- ── VENTAS ── -->
+    <!-- VENTAS -->
     <p class="seccion-titulo">💳 Resumen de ventas</p>
     <div class="cards-grid">
       <div class="card-stat">
@@ -65,7 +65,7 @@
       </div>
     </div>
 
-    <!-- ── CAJA ── -->
+    <!-- CAJA -->
     <p class="seccion-titulo">💰 Estado de caja</p>
     <div class="grid-2">
       <div class="card">
@@ -97,26 +97,25 @@
       </div>
     </div>
 
-    <!-- ── INVENTARIO ── -->
-    <p class="seccion-titulo">📦 Inventario</p>
-    <div class="grid-2">
-      <div class="card">
-        <p class="card-titulo">⚠ Alertas de stock</p>
-        <div id="alertasStock"><p class="texto-vacio">Cargando...</p></div>
-      </div>
-      <div class="card">
-        <p class="card-titulo">🏆 Productos más vendidos</p>
-        <div id="topProductos"><p class="texto-vacio">Cargando...</p></div>
+    <!-- ALERTAS CRÍTICAS -->
+    <p class="seccion-titulo">🚨 Alertas críticas</p>
+    <div class="card">
+      <p class="card-titulo">❌ Agotados que más venden — reabastecer urgente</p>
+      <div id="alertasCriticas"><p class="texto-vacio">Cargando...</p></div>
+      <div style="margin-top:12px;">
+        <a href="analisis.html" class="btn-outline" style="width:auto; display:inline-flex;">
+          📈 Ver análisis completo
+        </a>
       </div>
     </div>
 
-    <!-- ── CRM ── -->
+    <!-- CRM -->
     <p class="seccion-titulo">👥 CRM — Clientes</p>
     <div class="grid-2">
       <div class="card">
         <p class="card-titulo">🔴 Con saldo pendiente</p>
         <div class="tabla-wrapper">
-          <table class="crm-tabla">
+          <table>
             <thead><tr><th>Cliente</th><th>Saldo</th><th>Ventas</th><th></th></tr></thead>
             <tbody id="crmPendientes"><tr><td colspan="4" class="texto-vacio">Cargando...</td></tr></tbody>
           </table>
@@ -125,7 +124,7 @@
       <div class="card">
         <p class="card-titulo">⭐ Mejores clientes</p>
         <div class="tabla-wrapper">
-          <table class="crm-tabla">
+          <table>
             <thead><tr><th>Cliente</th><th>Total comprado</th><th>Ventas</th></tr></thead>
             <tbody id="crmTop"><tr><td colspan="3" class="texto-vacio">Cargando...</td></tr></tbody>
           </table>
@@ -133,11 +132,11 @@
       </div>
     </div>
 
-    <!-- Ventas recientes -->
+    <!-- VENTAS RECIENTES -->
     <p class="seccion-titulo">🧾 Ventas recientes</p>
     <div class="card">
       <div class="tabla-wrapper">
-        <table class="crm-tabla">
+        <table>
           <thead>
             <tr><th>#</th><th>Cliente</th><th>Vendedor</th><th>Total</th><th>Cobrado</th><th>Saldo</th><th>Estado</th></tr>
           </thead>
@@ -146,7 +145,7 @@
       </div>
     </div>
 
-    <!-- Accesos rápidos -->
+    <!-- ACCESOS RÁPIDOS -->
     <div class="card" style="margin-top:8px;">
       <p class="card-titulo">⚡ Accesos rápidos</p>
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -155,6 +154,7 @@
         <button class="btn-outline"    style="width:auto;" onclick="location.href='inventario.html'">📦 Inventario</button>
         <button class="btn-outline"    style="width:auto;" onclick="location.href='compras.html'">🛍 Compras</button>
         <button class="btn-outline"    style="width:auto;" onclick="location.href='caja.html'">💰 Caja</button>
+        <button class="btn-outline"    style="width:auto;" onclick="location.href='analisis.html'">📈 Análisis</button>
       </div>
     </div>
 
