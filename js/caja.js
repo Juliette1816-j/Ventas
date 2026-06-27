@@ -222,14 +222,14 @@ document.getElementById("btnRegistrarMovimiento").addEventListener("click", asyn
   try {
     if (tipo === "ganancia" && socia === "Ambas") {
       const mitad = monto / 2;
-      for (const s of ["Socia 1", "Socia 2"]) {
+      for (const s of ["Paola", "Juliette"]) {
         const { error } = await sb.from("caja").insert([{
           tipo,
           concepto:   concepto + ` (${s})`,
           monto:      mitad,
           socia:      s,
           referencia: referencia || null,
-          saldo_caja: s === "Socia 1" ? cajaActual - mitad : cajaActual - monto,
+          saldo_caja: s === "Paola" ? cajaActual - mitad : cajaActual - monto,
           usuario:    usuario.username
         }]);
         if (error) throw error;
