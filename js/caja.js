@@ -78,8 +78,8 @@ function calcularBolsas(movimientos, totalPagos) {
       case "ganancia":
         ganancias += v;
         egresos   += v;
-        if (m.socia === "Socia 1")      socia1 += v;
-        else if (m.socia === "Socia 2") socia2 += v;
+        if (m.socia === "Paola")      socia1 += v;
+        else if (m.socia === "Juliette/") socia2 += v;
         else if (m.socia === "Ambas") {
           socia1 += v / 2;
           socia2 += v / 2;
