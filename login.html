@@ -16,6 +16,83 @@
     <label for="username">Usuario</label>
     <input type="text" id="username" placeholder="Ingresa tu usuario" autocomplete="username">
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+  const { createClient } = supabase;
+  const sb = createClient(
+    "https://jzuxaxlnguvsvlmymkge.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dXhheGxuZ3V2c3ZsbXlta2dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNTI2NjIsImV4cCI6MjA5NzgyODY2Mn0.DatIvM5O6mFz0qhR8tRreB0TCyB8pBMj5FBo0GmMEQo"
+  );
+
+  function mostrarError(msg) {
+    const el = document.getElementById("errorMsg");
+    el.textContent = msg;
+    el.style.display = "block";
+  }
+
+  async function login() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const btn      = document.getElementById("loginBtn");
+
+    document.getElementById("errorMsg").style.display = "none";
+
+    if (!username || !password) {
+      mostrarError("Completa todos los campos.");
+      return;
+    }
+
+    btn.disabled    = true;
+    btn.textContent = "Ingresando...";
+
+    // Siempre lee el perfil fresco desde Supabase
+    const { data, error } = await sb
+      .from("perfiles")
+      .select("*")
+      .eq("username", username)
+      .eq("password", password)
+      .single();
+
+    btn.disabled    = false;
+    btn.textContent = "Ingresar";
+
+    if (error || !data) {
+      mostrarError("Usuario o contraseña incorrectos.");
+      return;
+    }
+
+    // Cargar permisos del usuario
+    const { data: permisos } = await sb
+      .from("permisos")
+      .select("modulo, acceso")
+      .eq("perfil_id", data.id);
+
+    const permisosMap = {};
+    (permisos || []).forEach(p => { permisosMap[p.modulo] = p.acceso; });
+
+    // Guardar sesión completa y actualizada
+    localStorage.setItem("usuario", JSON.stringify({
+      id:       data.id,
+      nombre:   data.nombre,
+      rol:      data.rol,
+      username: data.username,
+      permisos: permisosMap
+    }));
+
+    // Redirigir según rol
+    if (data.rol === "SuperAdmin" || data.rol === "Admin") {
+      window.location.href = "dashboard.html";
+    } else {
+      window.location.href = "index.html";
+    }
+  }
+
+  document.getElementById("loginBtn").addEventListener("click", login);
+  document.getElementById("password").addEventListener("keydown", e => {
+    if (e.key === "Enter") login();
+  });
+</script>
+
     <label for="password">Contraseña</label>
     <input type="password" id="password" placeholder="Ingresa tu contraseña" autocomplete="current-password">
 
@@ -25,68 +102,7 @@
   </div>
 
   <!-- Supabase directo, sin módulos -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script>
-    const { createClient } = supabase;
-
-    const sb = createClient(
-      "https://jzuxaxlnguvsvlmymkge.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dXhheGxuZ3V2c3ZsbXlta2dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNTI2NjIsImV4cCI6MjA5NzgyODY2Mn0.DatIvM5O6mFz0qhR8tRreB0TCyB8pBMj5FBo0GmMEQo"
-    );
-
-    function mostrarError(msg) {
-      const el = document.getElementById("errorMsg");
-      el.textContent = msg;
-      el.style.display = "block";
-    }
-
-    async function login() {
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const btn = document.getElementById("loginBtn");
-
-      document.getElementById("errorMsg").style.display = "none";
-
-      if (!username || !password) {
-        mostrarError("Completa todos los campos.");
-        return;
-      }
-
-      btn.disabled = true;
-      btn.textContent = "Ingresando...";
-
-      const { data, error } = await sb
-        .from("perfiles")
-        .select("*")
-        .eq("username", username)
-        .eq("password", password)
-        .single();
-
-      btn.disabled = false;
-      btn.textContent = "Ingresar";
-
-      if (error || !data) {
-        mostrarError("Usuario o contraseña incorrectos.");
-        return;
-      }
-
-      localStorage.setItem("usuario", JSON.stringify({
-        id: data.id,
-        nombre: data.nombre,
-        rol: data.rol,
-        username: data.username
-      }));
-
-      window.location.href = data.rol === "Administrador"
-        ? "dashboard.html"
-        : "index.html";
-    }
-
-    document.getElementById("loginBtn").addEventListener("click", login);
-    document.getElementById("password").addEventListener("keydown", e => {
-      if (e.key === "Enter") login();
-    });
-  </script>
+  
 
 </body>
 </html>
